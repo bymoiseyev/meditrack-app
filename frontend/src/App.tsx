@@ -1,10 +1,7 @@
+import MedicationRegistry from './pages/MedicationRegistry.js';
 
 function App() {
-
-  return (
-    <>
-    </>
-  )
+  return <MedicationRegistry />;
 }
 
-export default App
+export default App;
