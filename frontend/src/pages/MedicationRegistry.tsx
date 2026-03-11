@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import type { Medication, FormState } from '../types/medication';
-import SearchFilterBar from '../components/SearchFilterBar';
-import MedicationTable from '../components/MedicationTable';
-import MedicationCards from '../components/MedicationCards';
-import MedicationFormModal from '../components/MedicationFormModal';
+import type { Medication, FormState } from '../types/medication.js';
+import SearchFilterBar from '../components/SearchFilterBar.js';
+import MedicationTable from '../components/MedicationTable.js';
+import MedicationCards from '../components/MedicationCards.js';
+import MedicationFormModal from '../components/MedicationFormModal.js';
+import Sidebar from '../components/Sidebar.js';
 
 const INITIAL_MEDICATIONS: Medication[] = [
   { id: '1', name: 'Paracetamol', atcCode: 'N02BE01', form: 'Tablet', strength: '500 mg', stockBalance: 24, threshold: 30 },
@@ -112,7 +113,8 @@ export default function MedicationRegistry() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex bg-zinc-50/50">
+      <Sidebar />
       <div className="max-w-[90rem] mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         {/* Header row — stacks on mobile, side-by-side on sm+ */}
@@ -128,24 +130,28 @@ export default function MedicationRegistry() {
               A clear overview of name, ATC code, form, strength, and current stock balance. Designed to be fast to scan in stressful situations.
             </p>
           </div>
+
+        </div>
+
+        <div className=' flex flex-col gap-4 mb-4   justify-between items-end w-full  '>
+          <SearchFilterBar
+            search={search}
+            setSearch={setSearch}
+            formFilter={formFilter}
+            setFormFilter={setFormFilter}
+            uniqueForms={uniqueForms}
+            openAdd={openAdd}
+          />
           <button
             onClick={openAdd}
-            className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer sm:whitespace-nowrap sm:flex-shrink-0"
+            className="flex lg:hidden h-fit max-lg:w-full items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer sm:whitespace-nowrap sm:flex-shrink-0"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             Add medication
           </button>
         </div>
-
-        <SearchFilterBar
-          search={search}
-          setSearch={setSearch}
-          formFilter={formFilter}
-          setFormFilter={setFormFilter}
-          uniqueForms={uniqueForms}
-        />
 
         <MedicationTable
           filtered={filtered}
@@ -154,7 +160,6 @@ export default function MedicationRegistry() {
           onEdit={openEdit}
           onDelete={handleDelete}
         />
-
         <MedicationCards
           filtered={filtered}
           deleteConfirmId={deleteConfirmId}
