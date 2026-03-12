@@ -13,7 +13,7 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
         <div className="flex-1 min-w-0">
           <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-            Search medication
+            Sök läkemedel
           </label>
           <div className="relative">
             <svg
@@ -25,7 +25,7 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
             </svg>
             <input
               type="text"
-              placeholder="Search by name, ATC code, or form…"
+              placeholder="Sök på namn, ATC-kod eller form…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
@@ -35,14 +35,14 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
         <div className="flex items-end gap-4">
           <div className="sm:w-52">
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-              Form
+              Form (beredningsform)
             </label>
             <select
               value={formFilter}
               onChange={(e) => setFormFilter(e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 sm:py-2 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
             >
-              <option value="">All forms</option>
+              <option value="">Alla former</option>
               {uniqueForms.map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
@@ -66,7 +66,7 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            Add medication
+            Lägg till läkemedel
           </button>
         </div>
       </div>

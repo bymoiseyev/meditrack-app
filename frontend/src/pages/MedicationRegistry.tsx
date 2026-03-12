@@ -81,12 +81,12 @@ export default function MedicationRegistry() {
 
   function validate(): boolean {
     const e: Partial<FormState> = {};
-    if (!form.name.trim()) e.name = 'Required';
-    if (!form.atcCode.trim()) e.atcCode = 'Required';
-    if (!form.form.trim()) e.form = 'Required';
-    if (!form.strength.trim()) e.strength = 'Required';
-    if (form.stockBalance === '' || isNaN(Number(form.stockBalance))) e.stockBalance = 'Must be a number';
-    if (form.threshold === '' || isNaN(Number(form.threshold))) e.threshold = 'Must be a number';
+    if (!form.name.trim()) e.name = 'Obligatoriskt';
+    if (!form.atcCode.trim()) e.atcCode = 'Obligatoriskt';
+    if (!form.form.trim()) e.form = 'Obligatoriskt';
+    if (!form.strength.trim()) e.strength = 'Obligatoriskt';
+    if (form.stockBalance === '' || isNaN(Number(form.stockBalance))) e.stockBalance = 'Måste vara ett tal';
+    if (form.threshold === '' || isNaN(Number(form.threshold))) e.threshold = 'Måste vara ett tal';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -125,11 +125,11 @@ export default function MedicationRegistry() {
             <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1 text-xs text-slate-500 font-medium mb-3">
               <span>MediTrack</span>
               <span className="text-slate-300">•</span>
-              <span>Medication Registry</span>
+              <span>Läkemedelsregister</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Medications</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Läkemedel</h1>
             <p className="mt-1 text-sm text-slate-500 max-w-lg">
-              A clear overview of name, ATC code, form, strength, and current stock balance. Designed to be fast to scan in stressful situations.
+              En tydlig översikt över namn, ATC-kod, form, styrka och aktuellt lagersaldo. Utformad för att vara snabb att skanna i stressiga situationer.
             </p>
           </div>
 
@@ -151,7 +151,7 @@ export default function MedicationRegistry() {
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            Add medication
+            Lägg till läkemedel
           </button>
         </div>
 
@@ -173,7 +173,7 @@ export default function MedicationRegistry() {
         {/* Result count */}
         {(search || formFilter) && (
           <p className="mt-3 text-xs text-slate-400 text-right">
-            {filtered.length} of {medications.length} medications
+            {filtered.length} av {medications.length} läkemedel
           </p>
         )}
       </div>
