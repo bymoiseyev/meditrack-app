@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { FormState } from '../types/medication';
+import type { FormState } from '../types/medication.js';
 
 const FORM_CHOICES = ['Tablett', 'Kapsel', 'Injektion', 'Injektionslösning', 'Oral lösning', 'Plåster', 'Inhalator'];
 
@@ -27,7 +27,7 @@ export default function MedicationFormModal({ editingId, form, errors, setForm, 
         {isSelect ? (
           <select
             value={form[key]}
-            onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+            onChange={(e) => setForm((f: FormState) => ({ ...f, [key]: e.target.value }))}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 ${
               errors[key] ? 'border-red-400' : 'border-slate-200'
             }`}
@@ -41,7 +41,7 @@ export default function MedicationFormModal({ editingId, form, errors, setForm, 
           <input
             type={type}
             value={form[key]}
-            onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+            onChange={(e) => setForm((f: FormState) => ({ ...f, [key]: e.target.value }))}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-800 placeholder-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 ${
               errors[key] ? 'border-red-400' : 'border-slate-200'
             }`}

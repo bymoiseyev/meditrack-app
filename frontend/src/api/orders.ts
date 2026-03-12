@@ -1,0 +1,75 @@
+import type { Order, OrderStatus } from '../types/order.js';
+
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+
+interface BackendOrderLine {
+  medicationId: number;
+  medicationName: string;
+  form: string;
+  strength: string;
+  quantity: number;
+}
+
+interface BackendOrder {
+  id: string; // already formatted as ORD-XXXX by the backend
+  status: OrderStatus;
+  createdAt: string;
+  careUnit: { id: number; name: string };
+  lines: BackendOrderLine[];
+}
+
+function map(o: BackendOrder): Order {
+  return {
+    id:           o.id,
+    status:       o.status,
+    createdAt:    o.createdAt,
+    careUnitId:   String(o.careUnit.id),
+    careUnitName: o.careUnit.name,
+    lines: o.lines.map((l) => ({
+      medicationId:   String(l.medicationId),
+      medicationName: l.medicationName,
+      form:           l.form,
+      strength:       l.strength,
+      quantity:       l.quantity,
+    })),
+  };
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...init,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `Request failed: ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function getOrders(params?: { careUnitId?: string; status?: string }): Promise<Order[]> {
+  const qs = new URLSearchParams();
+  if (params?.careUnitId) qs.set('careUnitId', params.careUnitId);
+  if (params?.status)     qs.set('status',     params.status);
+  const query = qs.toString() ? `?${qs}` : '';
+  const list = await request<BackendOrder[]>(`/api/orders${query}`);
+  return list.map(map);
+}
+
+export async function createOrder(data: {
+  careUnitId: number;
+  lines: { medicationId: number; quantity: number }[];
+}): Promise<Order> {
+  const o = await request<BackendOrder>('/api/orders', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return map(o);
+}
+
+export async function advanceOrderStatus(id: string): Promise<Order> {
+  const o = await request<BackendOrder>(`/api/orders/${id}/status`, {
+    method: 'PATCH',
+  });
+  return map(o);
+}

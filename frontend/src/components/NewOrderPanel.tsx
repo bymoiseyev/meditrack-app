@@ -1,24 +1,29 @@
 import { useState } from 'react';
-import type { CareUnit, OrderMedication, Order, OrderLine } from '../types/order.js';
+import type { CareUnit, OrderMedication, OrderLine } from '../types/order.js';
 
 interface FormErrors {
   medication?: string;
   quantity?: string;
 }
 
+export interface NewOrderPayload {
+  careUnitId: string;
+  lines: { medicationId: string; quantity: number }[];
+}
+
 interface Props {
   careUnits: CareUnit[];
   medications: OrderMedication[];
-  nextOrderId: string;
-  onSave: (order: Order) => void;
+  onSave: (payload: NewOrderPayload) => Promise<void>;
 }
 
-export default function NewOrderPanel({ careUnits, medications, nextOrderId, onSave }: Props) {
-  const [careUnitId, setCareUnitId] = useState('');
+export default function NewOrderPanel({ careUnits, medications, onSave }: Props) {
+  const [careUnitId, setCareUnitId]     = useState('');
   const [medicationId, setMedicationId] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [rows, setRows] = useState<OrderLine[]>([]);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [quantity, setQuantity]         = useState('');
+  const [rows, setRows]                 = useState<OrderLine[]>([]);
+  const [errors, setErrors]             = useState<FormErrors>({});
+  const [saving, setSaving]             = useState(false);
 
   const canSave = careUnitId !== '' && rows.length > 0;
 
@@ -55,23 +60,22 @@ export default function NewOrderPanel({ careUnits, medications, nextOrderId, onS
     setRows((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  function handleSave() {
-    if (!canSave) return;
-    const cu = careUnits.find((c) => c.id === careUnitId)!;
-    const order: Order = {
-      id: nextOrderId,
-      createdAt: new Date().toISOString(),
-      careUnitId: cu.id,
-      careUnitName: cu.name,
-      status: 'Utkast',
-      lines: rows,
-    };
-    onSave(order);
-    setCareUnitId('');
-    setMedicationId('');
-    setQuantity('');
-    setRows([]);
-    setErrors({});
+  async function handleSave() {
+    if (!canSave || saving) return;
+    setSaving(true);
+    try {
+      await onSave({
+        careUnitId,
+        lines: rows.map((r) => ({ medicationId: r.medicationId, quantity: r.quantity })),
+      });
+      setCareUnitId('');
+      setMedicationId('');
+      setQuantity('');
+      setRows([]);
+      setErrors({});
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -88,14 +92,9 @@ export default function NewOrderPanel({ careUnits, medications, nextOrderId, onS
 
         {/* Panel header */}
         <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Ny beställning</h2>
-              <p className="text-xs text-slate-400 mt-0.5">Fyll i uppgifter och lägg till läkemedelsrader</p>
-            </div>
-            <span className="font-mono text-xs text-slate-400 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
-              {nextOrderId}
-            </span>
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Ny beställning</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Fyll i uppgifter och lägg till läkemedelsrader</p>
           </div>
         </div>
 
@@ -215,13 +214,13 @@ export default function NewOrderPanel({ careUnits, medications, nextOrderId, onS
           )}
           <button
             onClick={handleSave}
-            disabled={!canSave}
+            disabled={!canSave || saving}
             className="w-full py-2.5 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-            Skapa beställning
+            {saving ? 'Sparar…' : 'Skapa beställning'}
           </button>
         </div>
 
