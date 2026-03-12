@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import type { Order, OrderStatus } from '../types/order.js';
 import OrderStatusBadge from './OrderStatusBadge.js';
 
@@ -23,18 +23,25 @@ function formatDate(iso: string) {
 interface Props {
   order: Order;
   onClose: () => void;
-  onAdvanceStatus: (orderId: string, newStatus: OrderStatus) => void;
+  onAdvanceStatus: (orderId: string) => Promise<void>;
 }
 
 export default function OrderDetailsModal({ order, onClose, onAdvanceStatus }: Props) {
+  const [advancing, setAdvancing] = useState(false);
+
   const nextStatus = NEXT_STATUS[order.status];
   const nextLabel  = NEXT_LABEL[order.status];
   const currentIdx = STATUSES.indexOf(order.status);
 
-  function handleAdvance() {
+  async function handleAdvance() {
     if (!nextStatus) return;
-    onAdvanceStatus(order.id, nextStatus);
-    onClose();
+    setAdvancing(true);
+    try {
+      await onAdvanceStatus(order.id);
+      onClose();
+    } finally {
+      setAdvancing(false);
+    }
   }
 
   return (
@@ -142,9 +149,10 @@ export default function OrderDetailsModal({ order, onClose, onAdvanceStatus }: P
           {nextStatus && nextLabel && (
             <button
               onClick={handleAdvance}
-              className="px-5 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
+              disabled={advancing}
+              className="px-5 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {nextLabel}
+              {advancing ? 'Sparar…' : nextLabel}
             </button>
           )}
         </div>

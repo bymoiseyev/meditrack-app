@@ -1,0 +1,149 @@
+// MediTrack – Prisma Schema
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// MEDICATION
+// Reference data. Managed manually by staff.
+// StockBalance is edited directly AND auto-
+// increment when an order reaches Levererad.
+// ─────────────────────────────────────────────
+model Medication {
+  id           Int         @id @default(autoincrement())
+  name         String
+  atcCode      String
+  form         String      // e.g. Tablett, Injektion, Injektionslösning
+  strength     String      // e.g. 500 mg, 10 mg/ml
+  stockBalance Int         @default(0)
+  threshold    Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  orderLines   OrderLine[]
+
+  @@index([name])
+  @@index([atcCode])
+}
+
+// ─────────────────────────────────────────────
+// CARE UNIT (Vårdenhet)
+// Standalone reference/lookup entity.
+// Orders belong to a care unit.
+// ─────────────────────────────────────────────
+model CareUnit {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+}
+
+// ─────────────────────────────────────────────
+// ORDER
+// ID is a plain auto-increment integer.
+// Format it as ORD-XXXX at the API layer.
+// Status follows a strict one-way flow:
+// Utkast → Skickad → Bekräftad → Levererad
+// Advancing to Levererad triggers stock increment.
+// ─────────────────────────────────────────────
+model Order {
+  id          Int         @id @default(autoincrement())
+  status      OrderStatus @default(Utkast)
+  careUnitId  Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deliveredAt DateTime?
+
+  careUnit    CareUnit    @relation(fields: [careUnitId], references: [id])
+  lines       OrderLine[]
+
+  @@index([status])
+  @@index([careUnitId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────
+// ORDER LINE
+// Snapshot pattern: name, form, and strength are
+// copied from the medication at time of order.
+// This preserves the historical record even if
+// the medication is later edited.
+// ─────────────────────────────────────────────
+model OrderLine {
+  id               Int        @id @default(autoincrement())
+  orderId          Int
+  medicationId     Int
+  medicationName   String     // snapshot
+  form             String     // snapshot
+  strength         String     // snapshot
+  quantity         Int
+
+  order            Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  medication       Medication @relation(fields: [medicationId], references: [id])
+
+  @@index([orderId])
+  @@index([medicationId])
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+enum OrderStatus {
+  Utkast      // Draft
+  Skickad     // Sent
+  Bekräftad   // Confirmed
+  Levererad   // Delivered — triggers stock increment
+}
+
+
+// ═════════════════════════════════════════════
+// OPTIONAL EXTENSIONS (if time permits)
+// ═════════════════════════════════════════════
+
+// ─────────────────────────────────────────────
+// AUTH — add if implementing role-based access
+// ─────────────────────────────────────────────
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   email     String   @unique
+//   password  String   // hashed
+//   role      UserRole @default(Nurse)
+//   createdAt DateTime @default(now())
+//
+//   auditLogs AuditLog[]
+// }
+//
+// enum UserRole {
+//   Admin
+//   Pharmacist   // Apotekare
+//   Nurse        // Sjuksköterska
+// }
+
+// ─────────────────────────────────────────────
+// AUDIT LOG — add if implementing change tracking
+// Tracks who did what and when — critical in
+// healthcare contexts.
+// ─────────────────────────────────────────────
+// model AuditLog {
+//   id         Int      @id @default(autoincrement())
+//   userId     Int?
+//   action     String   // e.g. "ORDER_STATUS_ADVANCED", "MEDICATION_UPDATED"
+//   entity     String   // e.g. "Order", "Medication"
+//   entityId   Int
+//   oldValue   Json?    // state before change
+//   newValue   Json?    // state after change
+//   createdAt  DateTime @default(now())
+//
+//   user       User?    @relation(fields: [userId], references: [id])
+//
+//   @@index([entity, entityId])
+//   @@index([userId])
+// }

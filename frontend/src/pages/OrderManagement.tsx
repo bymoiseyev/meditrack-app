@@ -1,45 +1,78 @@
-import { useState } from 'react';
-import type { Order, OrderStatus } from '../types/order.js';
-import { CARE_UNITS, ORDER_MEDICATIONS, INITIAL_ORDERS } from '../data/orderMockData.js';
+import { useState, useEffect } from 'react';
+import type { Order, CareUnit, OrderMedication } from '../types/order.js';
+import type { NewOrderPayload } from '../components/NewOrderPanel.js';
+import { getOrders, createOrder, advanceOrderStatus } from '../api/orders.js';
+import { getCareUnits } from '../api/careUnits.js';
+import { getMedications } from '../api/medications.js';
 import OrderFilters from '../components/OrderFilters.js';
 import OrdersList from '../components/OrdersList.js';
 import NewOrderPanel from '../components/NewOrderPanel.js';
 import OrderDetailsModal from '../components/OrderDetailsModal.js';
 
 export default function OrderManagement() {
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [searchId, setSearchId] = useState('');
-  const [careUnitFilter, setCareUnitFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [viewingOrderId, setViewingOrderId] = useState<string | null>(null);
-  const [orderCounter, setOrderCounter] = useState(1042);
+  const [orders, setOrders]       = useState<Order[]>([]);
+  const [careUnits, setCareUnits] = useState<CareUnit[]>([]);
+  const [medications, setMedications] = useState<OrderMedication[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [apiError, setApiError]   = useState<string | null>(null);
 
-  const nextOrderId = `ORD-${orderCounter + 1}`;
+  const [searchId, setSearchId]           = useState('');
+  const [careUnitFilter, setCareUnitFilter] = useState('');
+  const [statusFilter, setStatusFilter]   = useState('');
+  const [viewingOrderId, setViewingOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([getOrders(), getCareUnits(), getMedications()])
+      .then(([fetchedOrders, fetchedCareUnits, fetchedMeds]) => {
+        setOrders(fetchedOrders);
+        setCareUnits(fetchedCareUnits);
+        setMedications(
+          fetchedMeds.map((m) => ({
+            id:      m.id,
+            name:    m.name,
+            atcCode: m.atcCode,
+            form:    m.form,
+            strength: m.strength,
+          })),
+        );
+      })
+      .catch((e: Error) => setApiError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = orders.filter((o) => {
-    const matchesId       = !searchId.trim()      || o.id.toLowerCase().includes(searchId.trim().toLowerCase());
-    const matchesCareUnit = !careUnitFilter        || o.careUnitId === careUnitFilter;
-    const matchesStatus   = !statusFilter          || o.status === statusFilter;
+    const matchesId       = !searchId.trim()   || o.id.toLowerCase().includes(searchId.trim().toLowerCase());
+    const matchesCareUnit = !careUnitFilter     || o.careUnitId === careUnitFilter;
+    const matchesStatus   = !statusFilter       || o.status === statusFilter;
     return matchesId && matchesCareUnit && matchesStatus;
   });
 
-  function handleSaveOrder(order: Order) {
-    setOrders((prev) => [order, ...prev]);
-    setOrderCounter((n) => n + 1);
+  async function handleSaveOrder(payload: NewOrderPayload) {
+    const created = await createOrder({
+      careUnitId: Number(payload.careUnitId),
+      lines: payload.lines.map((l) => ({
+        medicationId: Number(l.medicationId),
+        quantity:     l.quantity,
+      })),
+    });
+    setOrders((prev) => [created, ...prev]);
   }
 
-  function handleAdvanceStatus(orderId: string, newStatus: OrderStatus) {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    );
-  }
-
-  function scrollToPanel() {
-    document.getElementById('new-order-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  async function handleAdvanceStatus(orderId: string) {
+    const updated = await advanceOrderStatus(orderId);
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
   }
 
   const viewingOrder = orders.find((o) => o.id === viewingOrderId) ?? null;
   const isFiltering  = !!(searchId || careUnitFilter || statusFilter);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-50/50 flex items-center justify-center">
+        <p className="text-sm text-slate-400">Laddar beställningar…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50/50">
@@ -60,6 +93,12 @@ export default function OrderManagement() {
           </div>
         </div>
 
+        {apiError && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+            {apiError}
+          </div>
+        )}
+
         {/* Filters */}
         <div className="mb-5">
           <OrderFilters
@@ -69,7 +108,7 @@ export default function OrderManagement() {
             setCareUnitFilter={setCareUnitFilter}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
-            careUnits={CARE_UNITS}
+            careUnits={careUnits}
           />
         </div>
 
@@ -94,9 +133,8 @@ export default function OrderManagement() {
           {/* Right: new order panel */}
           <div className="lg:sticky lg:top-6">
             <NewOrderPanel
-              careUnits={CARE_UNITS}
-              medications={ORDER_MEDICATIONS}
-              nextOrderId={nextOrderId}
+              careUnits={careUnits}
+              medications={medications}
               onSave={handleSaveOrder}
             />
           </div>

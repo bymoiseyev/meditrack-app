@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 afterEach(cleanup);
@@ -27,54 +27,53 @@ function orderWithStatus(status: OrderStatus): Order {
 describe('OrderDetailsModal', () => {
   describe('status transitions — advance button label', () => {
     it('shows "Skicka beställning" when status is Utkast', () => {
-      render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       screen.getByRole('button', { name: /skicka beställning/i });
     });
 
     it('shows "Bekräfta beställning" when status is Skickad', () => {
-      render(<OrderDetailsModal order={orderWithStatus('Skickad')} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={orderWithStatus('Skickad')} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       screen.getByRole('button', { name: /bekräfta beställning/i });
     });
 
     it('shows "Markera som levererad" when status is Bekräftad', () => {
-      render(<OrderDetailsModal order={orderWithStatus('Bekräftad')} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={orderWithStatus('Bekräftad')} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       screen.getByRole('button', { name: /markera som levererad/i });
     });
   });
 
   describe('Levererad — terminal status', () => {
     it('does not show an advance button when status is Levererad', () => {
-      render(<OrderDetailsModal order={orderWithStatus('Levererad')} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
-      // None of the advance labels should be present
+      render(<OrderDetailsModal order={orderWithStatus('Levererad')} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       expect(screen.queryByRole('button', { name: /skicka beställning/i })).toBeNull();
       expect(screen.queryByRole('button', { name: /bekräfta beställning/i })).toBeNull();
       expect(screen.queryByRole('button', { name: /markera som levererad/i })).toBeNull();
     });
 
     it('still shows the close button when status is Levererad', () => {
-      render(<OrderDetailsModal order={orderWithStatus('Levererad')} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={orderWithStatus('Levererad')} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       screen.getByRole('button', { name: /stäng/i });
     });
   });
 
   describe('advancing status', () => {
-    it('calls onAdvanceStatus with the correct orderId and next status', () => {
-      const onAdvanceStatus = vi.fn();
+    it('calls onAdvanceStatus with the correct orderId', async () => {
+      const onAdvanceStatus = vi.fn().mockResolvedValue(undefined);
       render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={vi.fn()} onAdvanceStatus={onAdvanceStatus} />);
       fireEvent.click(screen.getByRole('button', { name: /skicka beställning/i }));
-      expect(onAdvanceStatus).toHaveBeenCalledWith('ORD-TEST', 'Skickad');
+      await waitFor(() => expect(onAdvanceStatus).toHaveBeenCalledWith('ORD-TEST'));
     });
 
-    it('calls onClose after advancing the status', () => {
+    it('calls onClose after advancing the status', async () => {
       const onClose = vi.fn();
-      render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={onClose} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={onClose} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       fireEvent.click(screen.getByRole('button', { name: /skicka beställning/i }));
-      expect(onClose).toHaveBeenCalledOnce();
+      await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
     });
 
     it('calls onClose when the Stäng button is clicked without advancing', () => {
       const onClose = vi.fn();
-      const onAdvanceStatus = vi.fn();
+      const onAdvanceStatus = vi.fn().mockResolvedValue(undefined);
       render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={onClose} onAdvanceStatus={onAdvanceStatus} />);
       fireEvent.click(screen.getByRole('button', { name: /stäng/i }));
       expect(onClose).toHaveBeenCalledOnce();
@@ -84,13 +83,13 @@ describe('OrderDetailsModal', () => {
 
   describe('order content', () => {
     it('displays the order ID and care unit name', () => {
-      render(<OrderDetailsModal order={baseOrder} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={baseOrder} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       screen.getByText('ORD-TEST');
       screen.getByText('Avdelning 1A');
     });
 
     it('displays all order line items with name and quantity', () => {
-      render(<OrderDetailsModal order={baseOrder} onClose={vi.fn()} onAdvanceStatus={vi.fn()} />);
+      render(<OrderDetailsModal order={baseOrder} onClose={vi.fn()} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
       screen.getByText('Alvedon');
       screen.getByText('100');
     });

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 afterEach(cleanup);
@@ -13,38 +13,26 @@ const careUnits: CareUnit[] = [
 ];
 
 const medications: OrderMedication[] = [
-  { id: 'm-1', name: 'Alvedon', atcCode: 'N02BE01', form: 'Tablett', strength: '500 mg' },
+  { id: 'm-1', name: 'Alvedon', atcCode: 'N02BE01', form: 'Tablett',   strength: '500 mg' },
   { id: 'm-2', name: 'Morfin',  atcCode: 'N02AA01', form: 'Injektion', strength: '10 mg/ml' },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function renderPanel(onSave = vi.fn()) {
+function renderPanel(onSave = vi.fn().mockResolvedValue(undefined)) {
   render(
     <NewOrderPanel
       careUnits={careUnits}
       medications={medications}
-      nextOrderId="ORD-1043"
       onSave={onSave}
     />,
   );
 }
 
-// When only NewOrderPanel is rendered, comboboxes are in DOM order:
-//   [0] = vårdenhet (care unit)
-//   [1] = läkemedel (medication)
-function getCareUnitSelect() {
-  return screen.getAllByRole('combobox')[0] as HTMLSelectElement;
-}
-function getMedicationSelect() {
-  return screen.getAllByRole('combobox')[1] as HTMLSelectElement;
-}
-function getSaveButton() {
-  return screen.getByRole('button', { name: /skapa beställning/i }) as HTMLButtonElement;
-}
-function getQuantityInput() {
-  return screen.getByPlaceholderText('Kvantitet') as HTMLInputElement;
-}
+function getCareUnitSelect()  { return screen.getAllByRole('combobox')[0] as HTMLSelectElement; }
+function getMedicationSelect() { return screen.getAllByRole('combobox')[1] as HTMLSelectElement; }
+function getSaveButton()       { return screen.getByRole('button', { name: /skapa beställning/i }) as HTMLButtonElement; }
+function getQuantityInput()    { return screen.getByPlaceholderText('Kvantitet') as HTMLInputElement; }
 
 function addRow(medicationId: string, qty: string) {
   fireEvent.change(getMedicationSelect(), { target: { value: medicationId } });
@@ -79,7 +67,7 @@ describe('NewOrderPanel', () => {
     it('displays the medication name and quantity after a valid row is added', () => {
       renderPanel();
       addRow('m-1', '50');
-      screen.getByText('Alvedon'); // throws if not in DOM
+      screen.getByText('Alvedon');
       screen.getByText('50 st');
     });
 
@@ -133,30 +121,30 @@ describe('NewOrderPanel', () => {
   });
 
   describe('saving an order', () => {
-    it('calls onSave with status Utkast and the correct order shape', () => {
-      const onSave = vi.fn();
+    it('calls onSave with the correct payload shape', async () => {
+      const onSave = vi.fn().mockResolvedValue(undefined);
       renderPanel(onSave);
       fireEvent.change(getCareUnitSelect(), { target: { value: 'cu-1' } });
       addRow('m-1', '100');
       fireEvent.click(getSaveButton());
 
-      expect(onSave).toHaveBeenCalledOnce();
-      const order = onSave.mock.calls[0][0];
-      expect(order.id).toBe('ORD-1043');
-      expect(order.status).toBe('Utkast');
-      expect(order.careUnitId).toBe('cu-1');
-      expect(order.lines).toHaveLength(1);
-      expect(order.lines[0].quantity).toBe(100);
+      await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+      const payload = onSave.mock.calls[0]?.[0] as { careUnitId: string; lines: { medicationId: string; quantity: number }[] } | undefined;
+      expect(payload).toBeDefined();
+      expect(payload!.careUnitId).toBe('cu-1');
+      expect(payload!.lines).toHaveLength(1);
+      expect(payload!.lines[0]?.quantity).toBe(100);
+      expect(payload!.lines[0]?.medicationId).toBe('m-1');
     });
 
-    it('resets the form after saving', () => {
-      const onSave = vi.fn();
+    it('resets the form after saving', async () => {
+      const onSave = vi.fn().mockResolvedValue(undefined);
       renderPanel(onSave);
       fireEvent.change(getCareUnitSelect(), { target: { value: 'cu-1' } });
       addRow('m-1', '100');
       fireEvent.click(getSaveButton());
 
-      expect(getCareUnitSelect().value).toBe('');
+      await waitFor(() => expect(getCareUnitSelect().value).toBe(''));
       expect(screen.queryByText('Alvedon')).toBeNull();
     });
   });

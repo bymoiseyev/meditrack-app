@@ -1,23 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Medication, FormState } from '../types/medication.js';
+import { getMedications, createMedication, updateMedication, deleteMedication } from '../api/medications.js';
 import SearchFilterBar from '../components/SearchFilterBar.js';
 import MedicationTable from '../components/MedicationTable.js';
 import MedicationCards from '../components/MedicationCards.js';
 import MedicationFormModal from '../components/MedicationFormModal.js';
-
-const INITIAL_MEDICATIONS: Medication[] = [
-  { id: '1', name: 'Paracetamol', atcCode: 'N02BE01', form: 'Tablet', strength: '500 mg', stockBalance: 24, threshold: 30 },
-  { id: '2', name: 'Insulin Aspart', atcCode: 'A10AB05', form: 'Injection solution', strength: '100 E/ml', stockBalance: 62, threshold: 20 },
-  { id: '3', name: 'Morphine', atcCode: 'N02AA01', form: 'Injection', strength: '10 mg/ml', stockBalance: 12, threshold: 15 },
-  { id: '4', name: 'Amoxicillin', atcCode: 'J01CA04', form: 'Capsule', strength: '500 mg', stockBalance: 118, threshold: 40 },
-  { id: '5', name: 'Furosemide', atcCode: 'C03CA01', form: 'Tablet', strength: '40 mg', stockBalance: 39, threshold: 25 },
-  { id: '6', name: 'Metformin', atcCode: 'A10BA02', form: 'Tablet', strength: '500 mg', stockBalance: 8, threshold: 50 },
-  { id: '7', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
-  { id: '8', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
-  { id: '9', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
-  { id: '10', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
-  { id: '11', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
-];
 
 const emptyForm: FormState = {
   name: '',
@@ -29,14 +16,23 @@ const emptyForm: FormState = {
 };
 
 export default function MedicationRegistry() {
-  const [medications, setMedications] = useState<Medication[]>(INITIAL_MEDICATIONS);
-  const [search, setSearch] = useState('');
-  const [formFilter, setFormFilter] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(emptyForm);
-  const [errors, setErrors] = useState<Partial<FormState>>({});
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [apiError, setApiError]       = useState<string | null>(null);
+  const [search, setSearch]           = useState('');
+  const [formFilter, setFormFilter]   = useState('');
+  const [modalOpen, setModalOpen]     = useState(false);
+  const [editingId, setEditingId]     = useState<string | null>(null);
+  const [form, setForm]               = useState<FormState>(emptyForm);
+  const [errors, setErrors]           = useState<Partial<FormState>>({});
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getMedications()
+      .then(setMedications)
+      .catch((e: Error) => setApiError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const uniqueForms = Array.from(new Set(medications.map((m) => m.form))).sort();
 
@@ -60,12 +56,12 @@ export default function MedicationRegistry() {
 
   function openEdit(med: Medication) {
     setForm({
-      name: med.name,
-      atcCode: med.atcCode,
-      form: med.form,
-      strength: med.strength,
+      name:         med.name,
+      atcCode:      med.atcCode,
+      form:         med.form,
+      strength:     med.strength,
       stockBalance: String(med.stockBalance),
-      threshold: String(med.threshold),
+      threshold:    String(med.threshold),
     });
     setErrors({});
     setEditingId(med.id);
@@ -81,45 +77,65 @@ export default function MedicationRegistry() {
 
   function validate(): boolean {
     const e: Partial<FormState> = {};
-    if (!form.name.trim()) e.name = 'Obligatoriskt';
-    if (!form.atcCode.trim()) e.atcCode = 'Obligatoriskt';
-    if (!form.form.trim()) e.form = 'Obligatoriskt';
+    if (!form.name.trim())     e.name     = 'Obligatoriskt';
+    if (!form.atcCode.trim())  e.atcCode  = 'Obligatoriskt';
+    if (!form.form.trim())     e.form     = 'Obligatoriskt';
     if (!form.strength.trim()) e.strength = 'Obligatoriskt';
     if (form.stockBalance === '' || isNaN(Number(form.stockBalance))) e.stockBalance = 'Måste vara ett tal';
-    if (form.threshold === '' || isNaN(Number(form.threshold))) e.threshold = 'Måste vara ett tal';
+    if (form.threshold    === '' || isNaN(Number(form.threshold)))    e.threshold    = 'Måste vara ett tal';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!validate()) return;
-    const med: Medication = {
-      id: editingId ?? String(Date.now()),
-      name: form.name.trim(),
-      atcCode: form.atcCode.trim().toUpperCase(),
-      form: form.form.trim(),
-      strength: form.strength.trim(),
+
+    const payload = {
+      name:         form.name.trim(),
+      atcCode:      form.atcCode.trim().toUpperCase(),
+      form:         form.form.trim(),
+      strength:     form.strength.trim(),
       stockBalance: Number(form.stockBalance),
-      threshold: Number(form.threshold),
+      threshold:    Number(form.threshold),
     };
-    if (editingId) {
-      setMedications((prev) => prev.map((m) => (m.id === editingId ? med : m)));
-    } else {
-      setMedications((prev) => [...prev, med]);
+
+    try {
+      if (editingId) {
+        const updated = await updateMedication(editingId, payload);
+        setMedications((prev) => prev.map((m) => (m.id === editingId ? updated : m)));
+      } else {
+        const created = await createMedication(payload);
+        setMedications((prev) => [...prev, created]);
+      }
+      closeModal();
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : 'Något gick fel');
     }
-    closeModal();
   }
 
-  function handleDelete(id: string) {
-    setMedications((prev) => prev.filter((m) => m.id !== id));
-    setDeleteConfirmId(null);
+  async function handleDelete(id: string) {
+    try {
+      await deleteMedication(id);
+      setMedications((prev) => prev.filter((m) => m.id !== id));
+      setDeleteConfirmId(null);
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : 'Något gick fel');
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-50/50 flex items-center justify-center">
+        <p className="text-sm text-slate-400">Laddar läkemedel…</p>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-zinc-50/50">
       <div className=" mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
-        {/* Header row — stacks on mobile, side-by-side on sm+ */}
+        {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-3 py-1 text-xs text-slate-500 font-medium mb-3">
@@ -132,10 +148,15 @@ export default function MedicationRegistry() {
               En tydlig översikt över namn, ATC-kod, form, styrka och aktuellt lagersaldo. Utformad för att vara snabb att skanna i stressiga situationer.
             </p>
           </div>
-
         </div>
 
-        <div className=' flex flex-col gap-4 mb-4   justify-between items-end w-full  '>
+        {apiError && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+            {apiError}
+          </div>
+        )}
+
+        <div className='flex flex-col gap-4 mb-4 justify-between items-end w-full'>
           <SearchFilterBar
             search={search}
             setSearch={setSearch}
@@ -170,7 +191,6 @@ export default function MedicationRegistry() {
           onDelete={handleDelete}
         />
 
-        {/* Result count */}
         {(search || formFilter) && (
           <p className="mt-3 text-xs text-slate-400 text-right">
             {filtered.length} av {medications.length} läkemedel
