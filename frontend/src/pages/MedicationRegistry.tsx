@@ -117,7 +117,7 @@ export default function MedicationRegistry() {
 
   return (
     <div className="min-h-screen bg-zinc-50/50">
-      <div className="max-w-[120rem] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className=" mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         {/* Header row — stacks on mobile, side-by-side on sm+ */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">

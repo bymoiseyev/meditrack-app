@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Page } from './types/navigation.js';
 import Sidebar from './components/Sidebar.js';
 import MedicationRegistry from './pages/MedicationRegistry.js';
+import OrderManagement from './pages/OrderManagement.js';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('medications');
@@ -11,9 +12,7 @@ function App() {
       <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
       <div className="flex-1 min-w-0">
         {currentPage === 'medications' && <MedicationRegistry />}
-        {currentPage === 'orders' && (
-          <div className="p-8 text-slate-500">Orders page — coming soon.</div>
-        )}
+        {currentPage === 'orders' && <OrderManagement />}
       </div>
     </div>
   );
