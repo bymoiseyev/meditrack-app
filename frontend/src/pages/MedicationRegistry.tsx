@@ -4,7 +4,6 @@ import SearchFilterBar from '../components/SearchFilterBar.js';
 import MedicationTable from '../components/MedicationTable.js';
 import MedicationCards from '../components/MedicationCards.js';
 import MedicationFormModal from '../components/MedicationFormModal.js';
-import Sidebar from '../components/Sidebar.js';
 
 const INITIAL_MEDICATIONS: Medication[] = [
   { id: '1', name: 'Paracetamol', atcCode: 'N02BE01', form: 'Tablet', strength: '500 mg', stockBalance: 24, threshold: 30 },
@@ -14,6 +13,10 @@ const INITIAL_MEDICATIONS: Medication[] = [
   { id: '5', name: 'Furosemide', atcCode: 'C03CA01', form: 'Tablet', strength: '40 mg', stockBalance: 39, threshold: 25 },
   { id: '6', name: 'Metformin', atcCode: 'A10BA02', form: 'Tablet', strength: '500 mg', stockBalance: 8, threshold: 50 },
   { id: '7', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
+  { id: '8', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
+  { id: '9', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
+  { id: '10', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
+  { id: '11', name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablet', strength: '5 mg', stockBalance: 55, threshold: 20 },
 ];
 
 const emptyForm: FormState = {
@@ -113,9 +116,8 @@ export default function MedicationRegistry() {
   }
 
   return (
-    <div className="min-h-screen flex bg-zinc-50/50">
-      <Sidebar />
-      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="min-h-screen bg-zinc-50/50">
+      <div className="max-w-[120rem] mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         {/* Header row — stacks on mobile, side-by-side on sm+ */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">

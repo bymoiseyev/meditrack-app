@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Page } from '../types/navigation.js';
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -41,29 +42,42 @@ function IconClose() {
   );
 }
 
+function IconChevronLeft() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  );
+}
+
 // ── Nav item data ─────────────────────────────────────────────────────────────
 
 interface NavItem {
   label: string;
   icon: React.ReactNode;
-  active?: boolean;
+  page: Page;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Läkemedel',   icon: <IconPill />,      active: true  },
-  { label: 'Beställningar', icon: <IconClipboard />, active: false },
+  { label: 'Läkemedel',     icon: <IconPill />,       page: 'medications' },
+  { label: 'Beställningar', icon: <IconClipboard />,  page: 'orders'      },
 ];
 
 // ── Sidebar content (shared between desktop and mobile drawer) ────────────────
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
+interface SidebarContentProps {
+  currentPage: Page;
+  onNavigate: (page: Page) => void;
+  onClose?: () => void;
+}
+
+function SidebarContent({ currentPage, onNavigate, onClose }: SidebarContentProps) {
   return (
     <div className="flex flex-col h-full">
 
       {/* Top — logo + close button (close only shown on mobile) */}
       <div className="flex items-center justify-between px-4 pt-5 pb-4">
         <div className="flex items-center gap-3">
-          {/* Logo square */}
           <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center flex-shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
@@ -95,21 +109,25 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <p className="px-2 mb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
           Navigation
         </p>
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.label}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
-              item.active
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-            }`}
-          >
-            <span className={item.active ? 'text-white' : 'text-slate-400'}>
-              {item.icon}
-            </span>
-            {item.label}
-          </button>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const active = currentPage === item.page;
+          return (
+            <button
+              key={item.label}
+              onClick={() => { onNavigate(item.page); onClose?.(); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                active
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span className={active ? 'text-white' : 'text-slate-400'}>
+                {item.icon}
+              </span>
+              {item.label}
+            </button>
+          );
+        })}
       </nav>
 
       {/* Footer info card */}
@@ -127,14 +145,40 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function Sidebar() {
+interface SidebarProps {
+  currentPage: Page;
+  onNavigate: (page: Page) => void;
+}
+
+export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopOpen, setDesktopOpen] = useState(true);
 
   return (
     <>
       {/* ── DESKTOP SIDEBAR (lg+) ── */}
-      <aside className="hidden lg:flex flex-col w-[268px] flex-shrink-0 h-screen sticky top-0 bg-white border-r border-slate-200">
-        <SidebarContent />
+      <aside
+        className={`hidden lg:block relative flex-shrink-0 h-screen sticky top-0 transition-[width] duration-300 ease-in-out ${
+          desktopOpen ? 'w-[268px]' : 'w-0'
+        }`}
+      >
+        {/* Inner container — clips content during collapse */}
+      <div className="overflow-hidden w-full h-full flex flex-col bg-white border-r border-slate-200">
+  <div className="w-[268px] h-full flex flex-col">
+    <SidebarContent currentPage={currentPage} onNavigate={onNavigate} />
+  </div>
+</div>
+
+        {/* Toggle tab — pokes out to the right, always reachable */}
+        <button
+          onClick={() => setDesktopOpen(!desktopOpen)}
+          className="absolute top-5 right-0 translate-x-full flex items-center justify-center w-6 h-7 bg-white border border-l-0 border-slate-200 rounded-r-md shadow-sm hover:bg-slate-50 transition-colors cursor-pointer"
+          aria-label={desktopOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          <span className={`transition-transform duration-300 ${desktopOpen ? '' : 'rotate-180'}`}>
+            <IconChevronLeft />
+          </span>
+        </button>
       </aside>
 
       {/* ── MOBILE TOP BAR (below lg) ── */}
@@ -172,7 +216,7 @@ export default function Sidebar() {
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <SidebarContent onClose={() => setMobileOpen(false)} />
+        <SidebarContent currentPage={currentPage} onNavigate={onNavigate} onClose={() => setMobileOpen(false)} />
       </aside>
     </>
   );

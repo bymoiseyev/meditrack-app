@@ -48,14 +48,14 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
               ))}
             </select>
           </div>
-          {(search || formFilter) && (
+          {/* {(search || formFilter) && (
             <button
               onClick={() => { setSearch(''); setFormFilter(''); }}
               className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Clear
             </button>
-          )}
+          )} */}
 
           <div className="hidden lg:block h-10 w-px bg-slate-200 "></div>
 
