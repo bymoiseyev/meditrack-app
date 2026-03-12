@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { FormState } from '../types/medication';
 
-const FORM_CHOICES = ['Tablet', 'Capsule', 'Injection', 'Injection solution', 'Oral solution', 'Patch', 'Inhaler'];
+const FORM_CHOICES = ['Tablett', 'Kapsel', 'Injektion', 'Injektionslösning', 'Oral lösning', 'Plåster', 'Inhalator'];
 
 interface Props {
   editingId: string | null;
@@ -32,7 +32,7 @@ export default function MedicationFormModal({ editingId, form, errors, setForm, 
               errors[key] ? 'border-red-400' : 'border-slate-200'
             }`}
           >
-            <option value="">Select form…</option>
+            <option value="">Välj form…</option>
             {FORM_CHOICES.map((fc) => (
               <option key={fc} value={fc}>{fc}</option>
             ))}
@@ -62,7 +62,7 @@ export default function MedicationFormModal({ editingId, form, errors, setForm, 
         {/* Modal header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-900">
-            {editingId ? 'Edit medication' : 'Add medication'}
+            {editingId ? 'Redigera läkemedel' : 'Lägg till läkemedel'}
           </h2>
           <button
             onClick={onClose}
@@ -76,18 +76,18 @@ export default function MedicationFormModal({ editingId, form, errors, setForm, 
 
         {/* Modal body */}
         <div className="px-6 py-5 space-y-4">
-          {field('Name', 'name')}
+          {field('Namn', 'name')}
           <div className="grid grid-cols-2 gap-4">
-            {field('ATC Code', 'atcCode')}
+            {field('ATC-kod', 'atcCode')}
             {field('Form', 'form', 'text', true)}
           </div>
-          {field('Strength', 'strength')}
+          {field('Styrka', 'strength')}
           <div className="grid grid-cols-2 gap-4">
-            {field('Stock balance', 'stockBalance', 'number')}
-            {field('Threshold', 'threshold', 'number')}
+            {field('Lagersaldo', 'stockBalance', 'number')}
+            {field('Tröskel', 'threshold', 'number')}
           </div>
           <p className="text-xs text-slate-400">
-            A low stock warning appears when stock balance falls below the threshold.
+            En varning om lågt lager visas när lagersaldot understiger tröskelvärdet.
           </p>
         </div>
 
@@ -97,13 +97,13 @@ export default function MedicationFormModal({ editingId, form, errors, setForm, 
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            Cancel
+            Avbryt
           </button>
           <button
             onClick={onSave}
             className="px-5 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
           >
-            {editingId ? 'Save changes' : 'Add medication'}
+            {editingId ? 'Spara ändringar' : 'Lägg till läkemedel'}
           </button>
         </div>
       </div>
