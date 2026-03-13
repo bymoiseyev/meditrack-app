@@ -4,10 +4,11 @@ interface Props {
   formFilter: string;
   setFormFilter: (v: string) => void;
   uniqueForms: string[];
-  openAdd: () => void; 
+  openAdd: () => void;
+  canEdit: boolean;
 }
 
-export default function SearchFilterBar({ search, setSearch, formFilter, setFormFilter, uniqueForms, openAdd }: Props) {
+export default function SearchFilterBar({ search, setSearch, formFilter, setFormFilter, uniqueForms, openAdd, canEdit }: Props) {
   return (
     <div className="bg-white w-full border border-slate-200 rounded-xl shadow-sm px-4 sm:px-5 py-4">
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
@@ -57,9 +58,9 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
             </button>
           )} */}
 
-          <div className="hidden lg:block h-10 w-px bg-slate-200 "></div>
+          {canEdit && <div className="hidden lg:block h-10 w-px bg-slate-200 "></div>}
 
-          <button
+          {canEdit && <button
             className="hidden lg:flex h-fit max-lg:w-full items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer sm:whitespace-nowrap sm:flex-shrink-0"
             onClick={openAdd}
           >
@@ -67,7 +68,7 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
               <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             Lägg till läkemedel
-          </button>
+          </button>}
         </div>
       </div>
     </div>

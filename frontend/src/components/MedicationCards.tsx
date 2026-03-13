@@ -6,11 +6,12 @@ interface Props {
   setDeleteConfirmId: (id: string | null) => void;
   onEdit: (med: Medication) => void;
   onDelete: (id: string) => void;
+  canEdit: boolean;
 }
 
 const isLow = (med: Medication) => med.stockBalance < med.threshold;
 
-export default function MedicationCards({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete }: Props) {
+export default function MedicationCards({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete, canEdit }: Props) {
   return (
     <div className="lg:hidden space-y-3">
       {filtered.length === 0 ? (
@@ -74,39 +75,41 @@ export default function MedicationCards({ filtered, deleteConfirmId, setDeleteCo
               </div>
 
               {/* Card actions */}
-              <div className="border-t border-slate-100 flex">
-                {deleteConfirmId === med.id ? (
-                  <>
-                    <button
-                      onClick={() => onDelete(med.id)}
-                      className="flex-1 py-3 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"
-                    >
-                      Bekräfta borttagning
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmId(null)}
-                      className="flex-1 py-3 text-sm font-medium text-slate-500 border-l border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
-                    >
-                      Avbryt
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => onEdit(med)}
-                      className="flex-1 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors border-r border-slate-100 cursor-pointer"
-                    >
-                      Redigera
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmId(med.id)}
-                      className="flex-1 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                    >
-                      Ta bort
-                    </button>
-                  </>
-                )}
-              </div>
+              {canEdit && (
+                <div className="border-t border-slate-100 flex">
+                  {deleteConfirmId === med.id ? (
+                    <>
+                      <button
+                        onClick={() => onDelete(med.id)}
+                        className="flex-1 py-3 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"
+                      >
+                        Bekräfta borttagning
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmId(null)}
+                        className="flex-1 py-3 text-sm font-medium text-slate-500 border-l border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
+                        Avbryt
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onEdit(med)}
+                        className="flex-1 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors border-r border-slate-100 cursor-pointer"
+                      >
+                        Redigera
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmId(med.id)}
+                        className="flex-1 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        Ta bort
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           );
         })

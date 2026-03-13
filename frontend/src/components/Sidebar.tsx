@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Page } from '../types/navigation.js';
+import type { AuthUser } from '../types/auth.js';
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -65,13 +66,36 @@ const NAV_ITEMS: NavItem[] = [
 
 // ── Sidebar content (shared between desktop and mobile drawer) ────────────────
 
+const ROLE_LABEL: Record<string, string> = {
+  Sjukskoterska: 'Sjuksköterska',
+  Apotekare:     'Apotekare',
+  Admin:         'Administratör',
+};
+
+const ROLE_PERMISSIONS: Record<string, { can: string[]; cannot: string[] }> = {
+  Sjukskoterska: {
+    can:    ['Visa läkemedel', 'Skapa beställningar'],
+    cannot: ['Redigera läkemedel', 'Bekräfta/leverera order'],
+  },
+  Apotekare: {
+    can:    ['Visa läkemedel', 'Redigera läkemedel', 'Bekräfta/leverera order'],
+    cannot: ['Hantera användare'],
+  },
+  Admin: {
+    can:    ['Full åtkomst'],
+    cannot: [],
+  },
+};
+
 interface SidebarContentProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
   onClose?: () => void;
+  user: AuthUser;
+  onLogout: () => void;
 }
 
-function SidebarContent({ currentPage, onNavigate, onClose }: SidebarContentProps) {
+function SidebarContent({ currentPage, onNavigate, onClose, user, onLogout }: SidebarContentProps) {
   return (
     <div className="flex flex-col h-full">
 
@@ -130,12 +154,36 @@ function SidebarContent({ currentPage, onNavigate, onClose }: SidebarContentProp
         })}
       </nav>
 
-      {/* Footer info card */}
+      {/* User card + logout */}
       <div className="mx-3 mb-4 mt-3">
         <div className="bg-slate-50 border border-slate-100 rounded-xl px-3.5 py-3">
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            MediTrack – internal medication and order management.
-          </p>
+          <p className="text-xs font-semibold text-slate-700 truncate">{user.name}</p>
+          <p className="text-[11px] text-slate-400 mb-2">{ROLE_LABEL[user.role] ?? user.role}</p>
+
+          {/* Permissions summary */}
+          {ROLE_PERMISSIONS[user.role] && (
+            <div className="mb-2 space-y-1">
+              {ROLE_PERMISSIONS[user.role].can.map((p) => (
+                <div key={p} className="flex items-center gap-1.5">
+                  <span className="text-emerald-500 flex-shrink-0">✓</span>
+                  <span className="text-[11px] text-slate-500">{p}</span>
+                </div>
+              ))}
+              {ROLE_PERMISSIONS[user.role].cannot.map((p) => (
+                <div key={p} className="flex items-center gap-1.5">
+                  <span className="text-red-400 flex-shrink-0">✕</span>
+                  <span className="text-[11px] text-slate-400">{p}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={onLogout}
+            className="w-full text-xs font-medium text-slate-500 hover:text-red-500 hover:bg-red-50 border border-slate-200 rounded-lg py-1.5 transition-colors cursor-pointer"
+          >
+            Logga ut
+          </button>
         </div>
       </div>
 
@@ -148,9 +196,11 @@ function SidebarContent({ currentPage, onNavigate, onClose }: SidebarContentProp
 interface SidebarProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
+  user: AuthUser;
+  onLogout: () => void;
 }
 
-export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
+export default function Sidebar({ currentPage, onNavigate, user, onLogout }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
 
@@ -165,7 +215,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         {/* Inner container — clips content during collapse */}
       <div className="overflow-hidden w-full h-full flex flex-col bg-white border-r border-slate-200">
   <div className="w-[268px] h-full flex flex-col">
-    <SidebarContent currentPage={currentPage} onNavigate={onNavigate} />
+    <SidebarContent currentPage={currentPage} onNavigate={onNavigate} user={user} onLogout={onLogout} />
   </div>
 </div>
 
@@ -216,7 +266,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <SidebarContent currentPage={currentPage} onNavigate={onNavigate} onClose={() => setMobileOpen(false)} />
+        <SidebarContent currentPage={currentPage} onNavigate={onNavigate} onClose={() => setMobileOpen(false)} user={user} onLogout={onLogout} />
       </aside>
     </>
   );

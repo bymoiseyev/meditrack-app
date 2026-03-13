@@ -1,4 +1,5 @@
 import type { Order, OrderStatus } from '../types/order.js';
+import { request as sharedRequest } from './request.js';
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
@@ -35,16 +36,8 @@ function map(o: BackendOrder): Order {
   };
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string };
-    throw new Error(body.error ?? `Request failed: ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+function request<T>(path: string, init?: RequestInit): Promise<T> {
+  return sharedRequest<T>(path, init);
 }
 
 export async function getOrders(params?: { careUnitId?: string; status?: string }): Promise<Order[]> {
