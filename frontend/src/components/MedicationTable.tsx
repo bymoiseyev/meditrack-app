@@ -6,13 +6,14 @@ interface Props {
   setDeleteConfirmId: (id: string | null) => void;
   onEdit: (med: Medication) => void;
   onDelete: (id: string) => void;
+  canEdit: boolean;
 }
 
 const isLow = (med: Medication) => med.stockBalance < med.threshold;
 
 const GRID = "grid-cols-[2fr_1fr_1fr_1fr_1.2fr_0.8fr_140px]";
 
-export default function MedicationTable({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete }: Props) {
+export default function MedicationTable({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete, canEdit }: Props) {
   return (
     <div className="hidden lg:block  border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       {/* Table header */}
@@ -85,26 +86,29 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
               </div>
 
               {/* Actions */}
-           <div className="flex items-center gap-2">
-  <button
-    onClick={() => onEdit(med)}
-    className="text-xs font-medium text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-  >
-    Redigera
-  </button>
-
-  <button
-    onClick={() => deleteConfirmId === med.id ? onDelete(med.id) : setDeleteConfirmId(med.id)}
-    onBlur={() => setDeleteConfirmId(null)}
-    className={`text-xs whitespace-nowrap font-medium px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-      deleteConfirmId === med.id
-        ? 'font-semibold text-white bg-red-500 hover:bg-red-600 border border-red-500'
-        : 'text-red-500 border border-red-200 hover:border-red-400 hover:bg-red-50'
-    }`}
-  >
-    {deleteConfirmId === med.id ? 'Bekräfta?' : 'Ta bort'}
-  </button>
-</div>
+              <div className="flex items-center gap-2">
+                {canEdit && (
+                  <button
+                    onClick={() => onEdit(med)}
+                    className="text-xs font-medium text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Redigera
+                  </button>
+                )}
+                {canEdit && (
+                  <button
+                    onClick={() => deleteConfirmId === med.id ? onDelete(med.id) : setDeleteConfirmId(med.id)}
+                    onBlur={() => setDeleteConfirmId(null)}
+                    className={`text-xs whitespace-nowrap font-medium px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      deleteConfirmId === med.id
+                        ? 'font-semibold text-white bg-red-500 hover:bg-red-600 border border-red-500'
+                        : 'text-red-500 border border-red-200 hover:border-red-400 hover:bg-red-50'
+                    }`}
+                  >
+                    {deleteConfirmId === med.id ? 'Bekräfta?' : 'Ta bort'}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })

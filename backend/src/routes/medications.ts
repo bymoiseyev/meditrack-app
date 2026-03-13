@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
+import { requireRole } from '../lib/auth.js';
 
 const router = Router();
 
@@ -67,7 +68,7 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
 
 // ─── POST /medications ────────────────────────────────────────────────────────
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', requireRole('Apotekare', 'Admin'), async (req: Request, res: Response) => {
   const error = validateMedicationBody(req.body);
   if (error) { res.status(400).json({ error }); return; }
 
@@ -92,7 +93,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 // ─── PUT /medications/:id ─────────────────────────────────────────────────────
 
-router.put('/:id', async (req: Request<{ id: string }>, res: Response) => {
+router.put('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
@@ -124,7 +125,7 @@ router.put('/:id', async (req: Request<{ id: string }>, res: Response) => {
 
 // ─── DELETE /medications/:id ──────────────────────────────────────────────────
 
-router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
+router.delete('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 

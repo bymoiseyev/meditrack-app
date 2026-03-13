@@ -1,6 +1,5 @@
 import type { Medication } from '../types/medication.js';
-
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+import { request } from './request.js';
 
 interface BackendMedication {
   id: number;
@@ -14,18 +13,6 @@ interface BackendMedication {
 
 function map(m: BackendMedication): Medication {
   return { ...m, id: String(m.id) };
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string };
-    throw new Error(body.error ?? `Request failed: ${res.status}`);
-  }
-  return res.json() as Promise<T>;
 }
 
 export async function getMedications(params?: { search?: string; form?: string }): Promise<Medication[]> {
@@ -54,9 +41,5 @@ export async function updateMedication(id: string, data: Omit<Medication, 'id'>)
 }
 
 export async function deleteMedication(id: string): Promise<void> {
-  const res = await fetch(`${BASE}/api/medications/${id}`, { method: 'DELETE' });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string };
-    throw new Error(body.error ?? `Request failed: ${res.status}`);
-  }
+  await request(`/api/medications/${id}`, { method: 'DELETE' });
 }

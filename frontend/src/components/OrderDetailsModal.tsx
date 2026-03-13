@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react';
 import type { Order, OrderStatus } from '../types/order.js';
 import OrderStatusBadge from './OrderStatusBadge.js';
+import { useAuth } from '../context/AuthContext.js';
 
 const STATUSES: OrderStatus[] = ['Utkast', 'Skickad', 'Bekräftad', 'Levererad'];
 
@@ -27,6 +28,8 @@ interface Props {
 }
 
 export default function OrderDetailsModal({ order, onClose, onAdvanceStatus }: Props) {
+  const { user } = useAuth();
+  const canAdvance = user?.role === 'Apotekare' || user?.role === 'Admin';
   const [advancing, setAdvancing] = useState(false);
 
   const nextStatus = NEXT_STATUS[order.status];
@@ -146,7 +149,7 @@ export default function OrderDetailsModal({ order, onClose, onAdvanceStatus }: P
           >
             Stäng
           </button>
-          {nextStatus && nextLabel && (
+          {canAdvance && nextStatus && nextLabel && (
             <button
               onClick={handleAdvance}
               disabled={advancing}

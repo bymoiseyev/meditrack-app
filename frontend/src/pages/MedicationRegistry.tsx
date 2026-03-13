@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Medication, FormState } from '../types/medication.js';
+import { useAuth } from '../context/AuthContext.js';
 import { getMedications, createMedication, updateMedication, deleteMedication } from '../api/medications.js';
 import SearchFilterBar from '../components/SearchFilterBar.js';
 import MedicationTable from '../components/MedicationTable.js';
@@ -16,6 +17,8 @@ const emptyForm: FormState = {
 };
 
 export default function MedicationRegistry() {
+  const { user } = useAuth();
+  const canEdit = user?.role === 'Apotekare' || user?.role === 'Admin';
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading]         = useState(true);
   const [apiError, setApiError]       = useState<string | null>(null);
@@ -164,8 +167,9 @@ export default function MedicationRegistry() {
             setFormFilter={setFormFilter}
             uniqueForms={uniqueForms}
             openAdd={openAdd}
+            canEdit={canEdit}
           />
-          <button
+          {canEdit && <button
             onClick={openAdd}
             className="flex lg:hidden h-fit max-lg:w-full items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer sm:whitespace-nowrap sm:flex-shrink-0"
           >
@@ -173,7 +177,7 @@ export default function MedicationRegistry() {
               <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             Lägg till läkemedel
-          </button>
+          </button>}
         </div>
 
         <MedicationTable
@@ -182,6 +186,7 @@ export default function MedicationRegistry() {
           setDeleteConfirmId={setDeleteConfirmId}
           onEdit={openEdit}
           onDelete={handleDelete}
+          canEdit={canEdit}
         />
         <MedicationCards
           filtered={filtered}
@@ -189,6 +194,7 @@ export default function MedicationRegistry() {
           setDeleteConfirmId={setDeleteConfirmId}
           onEdit={openEdit}
           onDelete={handleDelete}
+          canEdit={canEdit}
         />
 
         {(search || formFilter) && (
