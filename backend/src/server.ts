@@ -6,6 +6,7 @@ import cors from 'cors';
 import medicationsRouter from './routes/medications.js';
 import ordersRouter      from './routes/orders.js';
 import careUnitsRouter   from './routes/careUnits.js';
+import aiRouter          from './routes/ai.js';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -29,6 +30,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/medications', medicationsRouter);
 app.use('/api/orders',      ordersRouter);
 app.use('/api/care-units',  careUnitsRouter);
+app.use('/api/ai',          aiRouter);
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 
