@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const pool    = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -15,6 +16,27 @@ async function main() {
   await prisma.order.deleteMany();
   await prisma.medication.deleteMany();
   await prisma.careUnit.deleteMany();
+  await prisma.user.deleteMany();
+
+  // ─── Users ────────────────────────────────────────────────────────────────
+  const [nursePassword, pharmacistPassword, adminPassword] = await Promise.all([
+    bcrypt.hash('nurse123', 10),
+    bcrypt.hash('pharmacist123', 10),
+    bcrypt.hash('admin123', 10),
+  ]);
+
+  await Promise.all([
+    prisma.user.create({
+      data: { name: 'Anna Lindgren', email: 'nurse@meditrack.se', password: nursePassword, role: 'Sjukskoterska' },
+    }),
+    prisma.user.create({
+      data: { name: 'Erik Svensson', email: 'pharmacist@meditrack.se', password: pharmacistPassword, role: 'Apotekare' },
+    }),
+    prisma.user.create({
+      data: { name: 'Admin', email: 'admin@meditrack.se', password: adminPassword, role: 'Admin' },
+    }),
+  ]);
+  console.log('✅ Users created');
 
   // ─── Care Units ───────────────────────────────────────────────────────────
   const [avd1A, avd2B, akuten, iva, barnmed] = await Promise.all([

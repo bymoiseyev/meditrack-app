@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { OrderStatus } from '@prisma/client';
 import prisma from '../lib/prisma.js';
+import { requireRole } from '../lib/auth.js';
 
 const router = Router();
 
@@ -157,7 +158,7 @@ router.post('/', async (req: Request, res: Response) => {
 // Utkast → Skickad → Bekräftad → Levererad
 // Reaching Levererad triggers a stock increment for every order line.
 
-router.patch('/:id/status', async (req: Request<{ id: string }>, res: Response) => {
+router.patch('/:id/status', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 

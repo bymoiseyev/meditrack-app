@@ -7,6 +7,8 @@ import medicationsRouter from './routes/medications.js';
 import ordersRouter      from './routes/orders.js';
 import careUnitsRouter   from './routes/careUnits.js';
 import aiRouter          from './routes/ai.js';
+import authRouter        from './routes/auth.js';
+import { requireAuth }   from './lib/auth.js';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -27,10 +29,11 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.use('/api/medications', medicationsRouter);
-app.use('/api/orders',      ordersRouter);
-app.use('/api/care-units',  careUnitsRouter);
-app.use('/api/ai',          aiRouter);
+app.use('/api/auth',        authRouter);
+app.use('/api/medications', requireAuth, medicationsRouter);
+app.use('/api/orders',      requireAuth, ordersRouter);
+app.use('/api/care-units',  requireAuth, careUnitsRouter);
+app.use('/api/ai',          requireAuth, aiRouter);
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 
