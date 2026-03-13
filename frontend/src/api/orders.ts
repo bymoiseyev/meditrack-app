@@ -68,7 +68,8 @@ export async function createOrder(data: {
 }
 
 export async function advanceOrderStatus(id: string): Promise<Order> {
-  const o = await request<BackendOrder>(`/api/orders/${id}/status`, {
+  const numericId = id.replace(/^ORD-0*/, '');
+  const o = await request<BackendOrder>(`/api/orders/${numericId}/status`, {
     method: 'PATCH',
   });
   return map(o);

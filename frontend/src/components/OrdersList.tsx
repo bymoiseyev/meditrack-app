@@ -43,7 +43,10 @@ export default function OrdersList({ orders, onView }: Props) {
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+              <tr
+                key={order.id}
+                onClick={() => onView(order.id)}
+                className="border-b cursor-pointer border-slate-50 hover:bg-slate-50/50 transition-colors">
                 <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-700">{order.id}</td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{formatDateShort(order.createdAt)}</td>
                 <td className="px-4 py-3 text-slate-700">{order.careUnitName}</td>
@@ -53,7 +56,7 @@ export default function OrdersList({ orders, onView }: Props) {
                 <td className="px-4 py-3 text-slate-500 text-xs">{order.lines.length} läkemedel</td>
                 <td className="px-4 py-3 text-right">
                   <button
-                    onClick={() => onView(order.id)}
+
                     className="px-3 py-1.5 text-xs font-semibold text-slate-700 border border-slate-200 hover:border-slate-400 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
                   >
                     Visa
