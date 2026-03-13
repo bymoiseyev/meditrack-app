@@ -116,7 +116,7 @@ export default function OrderManagement() {
         <div className="grid grid-cols-1 2xl:grid-cols-[1fr_380px] gap-6 items-start">
 
           {/* Left: order history */}
-          <div>
+          <div className="order-2 2xl:order-1">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-slate-700">
                 Beställningshistorik
@@ -131,7 +131,7 @@ export default function OrderManagement() {
           </div>
 
           {/* Right: new order panel */}
-          <div className="lg:sticky lg:top-6">
+          <div className="order-1 2xl:order-2 2xl:sticky 2xl:top-6">
             <NewOrderPanel
               careUnits={careUnits}
               medications={medications}
