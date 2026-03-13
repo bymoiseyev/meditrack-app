@@ -175,15 +175,12 @@ router.patch('/:id/status', async (req: Request<{ id: string }>, res: Response) 
   }
 
   if (next === OrderStatus.Levererad) {
-    // Advance status and increment stock atomically
-    const [updated] = await prisma.$transaction([
-      prisma.order.update({
-        where: { id },
+    // Advance status and increment stock atomically.
+    // Including current status in WHERE prevents double-delivery if two requests race.
+    const [result] = await prisma.$transaction([
+      prisma.order.updateMany({
+        where: { id, status: order.status },
         data:  { status: next, deliveredAt: new Date() },
-        include: {
-          careUnit: { select: { id: true, name: true } },
-          lines:    true,
-        },
       }),
       ...order.lines.map((line) =>
         prisma.medication.update({
@@ -193,20 +190,42 @@ router.patch('/:id/status', async (req: Request<{ id: string }>, res: Response) 
       ),
     ]);
 
+    if (result.count === 0) {
+      res.status(409).json({ error: 'Order status was already changed by another request' });
+      return;
+    }
+
+    const updated = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        careUnit: { select: { id: true, name: true } },
+        lines:    true,
+      },
+    });
+
     res.json(formatOrder(updated as typeof order & { careUnit: { id: number; name: string } }));
     return;
   }
 
-  const updated = await prisma.order.update({
-    where: { id },
+  const result = await prisma.order.updateMany({
+    where: { id, status: order.status },
     data:  { status: next },
+  });
+
+  if (result.count === 0) {
+    res.status(409).json({ error: 'Order status was already changed by another request' });
+    return;
+  }
+
+  const updated = await prisma.order.findUnique({
+    where: { id },
     include: {
       careUnit: { select: { id: true, name: true } },
       lines:    true,
     },
   });
 
-  res.json(formatOrder(updated));
+  res.json(formatOrder(updated as typeof order & { careUnit: { id: number; name: string } }));
 });
 
 export default router;
