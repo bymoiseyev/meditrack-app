@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { OrderStatus } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { requireRole } from '../lib/auth.js';
+import { logAction } from '../lib/audit.js';
 
 const router = Router();
 
@@ -150,6 +151,11 @@ router.post('/', async (req: Request, res: Response) => {
     },
   });
 
+  await logAction(req.user!, 'ORDER_CREATED', 'Order', order.id, {
+    careUnitId: order.careUnitId,
+    lineCount:  order.lines.length,
+  });
+
   res.status(201).json(formatOrder(order));
 });
 
@@ -204,6 +210,11 @@ router.patch('/:id/status', requireRole('Apotekare', 'Admin'), async (req: Reque
       },
     });
 
+    await logAction(req.user!, 'ORDER_STATUS_ADVANCED', 'Order', id, {
+      from: order.status,
+      to:   next,
+    });
+
     res.json(formatOrder(updated as typeof order & { careUnit: { id: number; name: string } }));
     return;
   }
@@ -224,6 +235,11 @@ router.patch('/:id/status', requireRole('Apotekare', 'Admin'), async (req: Reque
       careUnit: { select: { id: true, name: true } },
       lines:    true,
     },
+  });
+
+  await logAction(req.user!, 'ORDER_STATUS_ADVANCED', 'Order', id, {
+    from: order.status,
+    to:   next,
   });
 
   res.json(formatOrder(updated as typeof order & { careUnit: { id: number; name: string } }));

@@ -1,6 +1,11 @@
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
+// Mock AuthContext — tests don't run inside AuthProvider
+vi.mock('../context/AuthContext.js', () => ({
+  useAuth: () => ({ user: { id: 1, name: 'Test User', email: 'test@test.com', role: 'Apotekare' } }),
+}));
+
 afterEach(cleanup);
 import OrderDetailsModal from '../components/OrderDetailsModal.js';
 import type { Order, OrderStatus } from '../types/order.js';
@@ -64,11 +69,13 @@ describe('OrderDetailsModal', () => {
       await waitFor(() => expect(onAdvanceStatus).toHaveBeenCalledWith('ORD-TEST'));
     });
 
-    it('calls onClose after advancing the status', async () => {
+    it('does not close the modal after advancing the status', async () => {
       const onClose = vi.fn();
-      render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={onClose} onAdvanceStatus={vi.fn().mockResolvedValue(undefined)} />);
+      const onAdvanceStatus = vi.fn().mockResolvedValue(undefined);
+      render(<OrderDetailsModal order={orderWithStatus('Utkast')} onClose={onClose} onAdvanceStatus={onAdvanceStatus} />);
       fireEvent.click(screen.getByRole('button', { name: /skicka beställning/i }));
-      await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+      await waitFor(() => expect(onAdvanceStatus).toHaveBeenCalled());
+      expect(onClose).not.toHaveBeenCalled();
     });
 
     it('calls onClose when the Stäng button is clicked without advancing', () => {

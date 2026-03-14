@@ -12,6 +12,7 @@ function getSecret(): string {
 export interface JwtPayload {
   userId: number;
   role: UserRole;
+  name: string;
 }
 
 // Extend Express Request to carry the authenticated user

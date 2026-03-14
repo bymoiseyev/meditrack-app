@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import { requireRole } from '../lib/auth.js';
+import { logAction } from '../lib/audit.js';
 
 const router = Router();
 
@@ -88,6 +89,11 @@ router.post('/', requireRole('Apotekare', 'Admin'), async (req: Request, res: Re
     },
   });
 
+  await logAction(req.user!, 'MEDICATION_CREATED', 'Medication', medication.id, {
+    name: medication.name,
+    atcCode: medication.atcCode,
+  });
+
   res.status(201).json(medication);
 });
 
@@ -120,6 +126,8 @@ router.put('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: 
     },
   });
 
+  await logAction(req.user!, 'MEDICATION_UPDATED', 'Medication', id, { name: medication.name });
+
   res.json(medication);
 });
 
@@ -138,7 +146,14 @@ router.delete('/:id', requireRole('Admin'), async (req: Request<{ id: string }>,
     return;
   }
 
+  const deleted = await prisma.medication.findUnique({ where: { id }, select: { name: true, atcCode: true } });
   await prisma.medication.delete({ where: { id } });
+
+  await logAction(req.user!, 'MEDICATION_DELETED', 'Medication', id, {
+    name: deleted!.name,
+    atcCode: deleted!.atcCode,
+  });
+
   res.status(204).send();
 });
 

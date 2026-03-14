@@ -1,1 +1,1 @@
-export type Page = 'medications' | 'orders';
+export type Page = 'medications' | 'orders' | 'auditLog';
