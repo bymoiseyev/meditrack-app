@@ -22,6 +22,8 @@ router.post('/login', async (req: Request, res: Response) => {
   const passwordMatch = user ? await bcrypt.compare(password, user.password) : false;
 
   if (!user || !passwordMatch) {
+    // Slow down failed attempts to make brute force attacks impractical
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     res.status(401).json({ error: 'Fel e-post eller lösenord' });
     return;
   }
