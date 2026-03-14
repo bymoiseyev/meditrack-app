@@ -15,6 +15,7 @@ const ACTION_COLOR: Record<string, string> = {
   ORDER_CREATED:         'bg-blue-50 text-blue-700 border border-blue-200',
   ORDER_STATUS_ADVANCED: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
   MEDICATION_CREATED:    'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  MEDICATION_UPDATED:    'bg-amber-50 text-amber-700 border border-amber-200',
   MEDICATION_DELETED:    'bg-red-50 text-red-600 border border-red-200',
 };
 
@@ -28,6 +29,9 @@ function DetailsSummary({ entry }: { entry: AuditLogEntry }) {
   }
   if (entry.action === 'MEDICATION_CREATED' || entry.action === 'MEDICATION_DELETED') {
     return <span className="text-slate-500">{String(d.name)} · {String(d.atcCode)}</span>;
+  }
+  if (entry.action === 'MEDICATION_UPDATED') {
+    return <span className="text-slate-500">{String(d.name)}</span>;
   }
   return null;
 }

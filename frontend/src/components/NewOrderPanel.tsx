@@ -374,7 +374,7 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
           <button
             onClick={handleSave}
             disabled={!canSave || saving}
-            className="w-full py-2.5 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-2.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
