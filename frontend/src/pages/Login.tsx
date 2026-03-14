@@ -4,10 +4,10 @@ import { login } from '../api/auth.js';
 
 export default function Login() {
   const { setAuth } = useAuth();
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,10 +90,11 @@ export default function Login() {
         <div className="mt-4 bg-white border border-slate-200 rounded-xl px-4 py-3">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Testkonton (Klicka på användare)</p>
           <div className="flex flex-col gap-1.5">
+            {/* GitGuardian had a meltdown over these😅, they're just demo credentials for the user. No real passwords were harmed :) */}
             {[
-              { label: 'Sjuksköterska', email: 'nurse@meditrack.se',        password: 'nurse123' },
-              { label: 'Apotekare',     email: 'pharmacist@meditrack.se',   password: 'pharmacist123' },
-              { label: 'Admin',         email: 'admin@meditrack.se',        password: 'admin123' },
+              { label: 'Sjuksköterska', email: 'nurse@meditrack.se', password: 'nurse123' },
+              { label: 'Apotekare', email: 'pharmacist@meditrack.se', password: 'pharmacist123' },
+              { label: 'Admin', email: 'admin@meditrack.se', password: 'admin123' },
             ].map((account) => (
               <button
                 key={account.email}

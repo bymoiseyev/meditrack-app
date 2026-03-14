@@ -79,7 +79,7 @@ const ROLE_PERMISSIONS: Record<string, { can: string[]; cannot: string[] }> = {
   },
   Apotekare: {
     can:    ['Visa läkemedel', 'Redigera läkemedel', 'Bekräfta/leverera order'],
-    cannot: ['Hantera användare'],
+    cannot: ['Ta bort läkemedel'],
   },
   Admin: {
     can:    ['Full åtkomst'],
@@ -161,22 +161,26 @@ function SidebarContent({ currentPage, onNavigate, onClose, user, onLogout }: Si
           <p className="text-[11px] text-slate-400 mb-2">{ROLE_LABEL[user.role] ?? user.role}</p>
 
           {/* Permissions summary */}
-          {ROLE_PERMISSIONS[user.role] && (
-            <div className="mb-2 space-y-1">
-              {ROLE_PERMISSIONS[user.role].can.map((p) => (
-                <div key={p} className="flex items-center gap-1.5">
-                  <span className="text-emerald-500 flex-shrink-0">✓</span>
-                  <span className="text-[11px] text-slate-500">{p}</span>
-                </div>
-              ))}
-              {ROLE_PERMISSIONS[user.role].cannot.map((p) => (
-                <div key={p} className="flex items-center gap-1.5">
-                  <span className="text-red-400 flex-shrink-0">✕</span>
-                  <span className="text-[11px] text-slate-400">{p}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {(() => {
+            const perms = ROLE_PERMISSIONS[user.role];
+            if (!perms) return null;
+            return (
+              <div className="mb-2 space-y-1">
+                {perms.can.map((p) => (
+                  <div key={p} className="flex items-center gap-1.5">
+                    <span className="text-emerald-500 flex-shrink-0">✓</span>
+                    <span className="text-[11px] text-slate-500">{p}</span>
+                  </div>
+                ))}
+                {perms.cannot.map((p) => (
+                  <div key={p} className="flex items-center gap-1.5">
+                    <span className="text-red-400 flex-shrink-0">✕</span>
+                    <span className="text-[11px] text-slate-400">{p}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           <button
             onClick={onLogout}

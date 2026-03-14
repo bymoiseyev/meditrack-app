@@ -41,7 +41,6 @@ export default function OrderDetailsModal({ order, onClose, onAdvanceStatus }: P
     setAdvancing(true);
     try {
       await onAdvanceStatus(order.id);
-      onClose();
     } finally {
       setAdvancing(false);
     }

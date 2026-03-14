@@ -9,6 +9,7 @@ import Login from './pages/Login.js';
 function AppShell() {
   const { user, loading, logout } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>('medications');
+  const [quickOrderMedId, setQuickOrderMedId] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -20,12 +21,21 @@ function AppShell() {
 
   if (!user) return <Login />;
 
+  function handleQuickOrder(medicationId: string) {
+    setQuickOrderMedId(medicationId);
+    setCurrentPage('orders');
+  }
+
   return (
     <div className="min-h-screen flex bg-zinc-50/50">
       <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} user={user} onLogout={logout} />
       <div className="flex-1 min-w-0">
-        {currentPage === 'medications' && <MedicationRegistry />}
-        {currentPage === 'orders' && <OrderManagement />}
+        {currentPage === 'medications' && (
+          <MedicationRegistry onQuickOrder={handleQuickOrder} />
+        )}
+        {currentPage === 'orders' && (
+          <OrderManagement quickOrderMedId={quickOrderMedId} onQuickOrderConsumed={() => setQuickOrderMedId(null)} />
+        )}
       </div>
     </div>
   );

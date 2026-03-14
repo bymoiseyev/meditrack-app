@@ -16,14 +16,19 @@ const emptyForm: FormState = {
   threshold: '',
 };
 
-export default function MedicationRegistry() {
+interface Props {
+  onQuickOrder: (medicationId: string) => void;
+}
+
+export default function MedicationRegistry({ onQuickOrder }: Props) {
   const { user } = useAuth();
   const canEdit = user?.role === 'Apotekare' || user?.role === 'Admin';
+  const canDelete = user?.role === 'Admin';
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading]         = useState(true);
   const [apiError, setApiError]       = useState<string | null>(null);
   const [search, setSearch]           = useState('');
-  const [formFilter, setFormFilter]   = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [modalOpen, setModalOpen]     = useState(false);
   const [editingId, setEditingId]     = useState<string | null>(null);
   const [form, setForm]               = useState<FormState>(emptyForm);
@@ -37,8 +42,6 @@ export default function MedicationRegistry() {
       .finally(() => setLoading(false));
   }, []);
 
-  const uniqueForms = Array.from(new Set(medications.map((m) => m.form))).sort();
-
   const filtered = medications.filter((med) => {
     const q = search.trim().toLowerCase();
     const matchesSearch =
@@ -46,8 +49,12 @@ export default function MedicationRegistry() {
       med.name.toLowerCase().includes(q) ||
       med.atcCode.toLowerCase().includes(q) ||
       med.form.toLowerCase().includes(q);
-    const matchesForm = !formFilter || med.form === formFilter;
-    return matchesSearch && matchesForm;
+    const isLow = med.stockBalance < med.threshold;
+    const matchesStatus =
+      !statusFilter ||
+      (statusFilter === 'low' && isLow) ||
+      (statusFilter === 'ok' && !isLow);
+    return matchesSearch && matchesStatus;
   });
 
   function openAdd() {
@@ -163,9 +170,8 @@ export default function MedicationRegistry() {
           <SearchFilterBar
             search={search}
             setSearch={setSearch}
-            formFilter={formFilter}
-            setFormFilter={setFormFilter}
-            uniqueForms={uniqueForms}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
             openAdd={openAdd}
             canEdit={canEdit}
           />
@@ -186,7 +192,9 @@ export default function MedicationRegistry() {
           setDeleteConfirmId={setDeleteConfirmId}
           onEdit={openEdit}
           onDelete={handleDelete}
+          onQuickOrder={onQuickOrder}
           canEdit={canEdit}
+          canDelete={canDelete}
         />
         <MedicationCards
           filtered={filtered}
@@ -194,10 +202,12 @@ export default function MedicationRegistry() {
           setDeleteConfirmId={setDeleteConfirmId}
           onEdit={openEdit}
           onDelete={handleDelete}
+          onQuickOrder={onQuickOrder}
           canEdit={canEdit}
+          canDelete={canDelete}
         />
 
-        {(search || formFilter) && (
+        {(search || statusFilter) && (
           <p className="mt-3 text-xs text-slate-400 text-right">
             {filtered.length} av {medications.length} läkemedel
           </p>
