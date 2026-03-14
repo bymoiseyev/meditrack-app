@@ -49,7 +49,7 @@ export function requireRole(...roles: UserRole[]) {
     next();
   };
 }
-
+// 7-day expiry is jsut for this demo, in production would use maybe 1–2 hours with a refresh token
 export function signToken(payload: JwtPayload): string {
   return jwt.sign(payload, getSecret(), { expiresIn: '7d' });
 }

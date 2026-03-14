@@ -125,7 +125,7 @@ router.put('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: 
 
 // ─── DELETE /medications/:id ──────────────────────────────────────────────────
 
-router.delete('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: string }>, res: Response) => {
+router.delete('/:id', requireRole('Admin'), async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
