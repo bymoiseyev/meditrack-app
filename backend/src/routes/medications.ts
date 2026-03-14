@@ -126,6 +126,8 @@ router.put('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: 
     },
   });
 
+  await logAction(req.user!, 'MEDICATION_UPDATED', 'Medication', id, { name: medication.name });
+
   res.json(medication);
 });
 

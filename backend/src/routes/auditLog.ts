@@ -9,6 +9,7 @@ const ACTION_LABEL: Record<string, string> = {
   ORDER_CREATED:          'Order skapad',
   ORDER_STATUS_ADVANCED:  'Orderstatus uppdaterad',
   MEDICATION_CREATED:     'Läkemedel tillagt',
+  MEDICATION_UPDATED:     'Läkemedel uppdaterat',
   MEDICATION_DELETED:     'Läkemedel borttaget',
 };
 

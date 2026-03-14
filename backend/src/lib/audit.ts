@@ -8,15 +8,20 @@ export async function logAction(
   entityId: number,
   details?: Record<string, unknown>,
 ) {
-  await prisma.auditLog.create({
-    data: {
-      userId:   user.userId,
-      userName: user.name,
-      userRole: user.role,
-      action,
-      entity,
-      entityId,
-      details:  (details ?? {}) as object,
-    },
-  });
+  try {
+    await prisma.auditLog.create({
+      data: {
+        userId:   user.userId,
+        userName: user.name,
+        userRole: user.role,
+        action,
+        entity,
+        entityId,
+        details:  (details ?? {}) as object,
+      },
+    });
+  } catch (err) {
+    // Logging failure should never surface to the user
+    console.error('Audit log failed:', err);
+  }
 }
