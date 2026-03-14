@@ -8,6 +8,7 @@ import ordersRouter      from './routes/orders.js';
 import careUnitsRouter   from './routes/careUnits.js';
 import aiRouter          from './routes/ai.js';
 import authRouter        from './routes/auth.js';
+import auditLogRouter    from './routes/auditLog.js';
 import { requireAuth }   from './lib/auth.js';
 
 const app  = express();
@@ -34,6 +35,7 @@ app.use('/api/medications', requireAuth, medicationsRouter);
 app.use('/api/orders',      requireAuth, ordersRouter);
 app.use('/api/care-units',  requireAuth, careUnitsRouter);
 app.use('/api/ai',          requireAuth, aiRouter);
+app.use('/api/audit-log',   requireAuth, auditLogRouter);
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 

@@ -112,13 +112,14 @@ enum OrderStatus {
 // AUTH — role-based access control
 // ─────────────────────────────────────────────
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   name      String
-  email     String   @unique
-  password  String   // bcrypt hash
-  role      UserRole @default(Sjukskoterska)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  email     String     @unique
+  password  String     // bcrypt hash
+  role      UserRole   @default(Sjukskoterska)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  auditLogs AuditLog[]
 }
 
 enum UserRole {
@@ -128,22 +129,24 @@ enum UserRole {
 }
 
 // ─────────────────────────────────────────────
-// AUDIT LOG — add if implementing change tracking
-// Tracks who did what and when — critical in
-// healthcare contexts.
+// AUDIT LOG — tracks who did what and when
+// userName and userRole are snapshotted so the
+// log stays readable even if the user changes.
 // ─────────────────────────────────────────────
-// model AuditLog {
-//   id         Int      @id @default(autoincrement())
-//   userId     Int?
-//   action     String   // e.g. "ORDER_STATUS_ADVANCED", "MEDICATION_UPDATED"
-//   entity     String   // e.g. "Order", "Medication"
-//   entityId   Int
-//   oldValue   Json?    // state before change
-//   newValue   Json?    // state after change
-//   createdAt  DateTime @default(now())
-//
-//   user       User?    @relation(fields: [userId], references: [id])
-//
-//   @@index([entity, entityId])
-//   @@index([userId])
-// }
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  userName  String   // snapshot
+  userRole  String   // snapshot
+  action    String   // ORDER_CREATED | ORDER_STATUS_ADVANCED | MEDICATION_CREATED | MEDICATION_DELETED
+  entity    String   // Order | Medication
+  entityId  Int
+  details   Json?    // e.g. { from: 'Skickad', to: 'Bekräftad' }
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
