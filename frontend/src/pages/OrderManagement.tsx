@@ -9,7 +9,12 @@ import OrdersList from '../components/OrdersList.js';
 import NewOrderPanel from '../components/NewOrderPanel.js';
 import OrderDetailsModal from '../components/OrderDetailsModal.js';
 
-export default function OrderManagement() {
+interface Props {
+  quickOrderMedId?: string | null;
+  onQuickOrderConsumed?: () => void;
+}
+
+export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed }: Props) {
   const [orders, setOrders]       = useState<Order[]>([]);
   const [careUnits, setCareUnits] = useState<CareUnit[]>([]);
   const [medications, setMedications] = useState<OrderMedication[]>([]);
@@ -136,6 +141,8 @@ export default function OrderManagement() {
               careUnits={careUnits}
               medications={medications}
               onSave={handleSaveOrder}
+              quickOrderMedId={quickOrderMedId ?? null}
+              onQuickOrderConsumed={onQuickOrderConsumed ?? (() => {})}
             />
           </div>
 

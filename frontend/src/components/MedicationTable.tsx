@@ -6,14 +6,16 @@ interface Props {
   setDeleteConfirmId: (id: string | null) => void;
   onEdit: (med: Medication) => void;
   onDelete: (id: string) => void;
+  onQuickOrder: (medicationId: string) => void;
   canEdit: boolean;
+  canDelete: boolean;
 }
 
 const isLow = (med: Medication) => med.stockBalance < med.threshold;
 
-const GRID = "grid-cols-[2fr_1fr_1fr_1fr_1.2fr_0.8fr_140px]";
+const GRID = "grid-cols-[1.3fr_1fr_1fr_1fr_1.2fr_0.8fr_230px]";
 
-export default function MedicationTable({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete, canEdit }: Props) {
+export default function MedicationTable({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete, onQuickOrder, canEdit, canDelete }: Props) {
   return (
     <div className="hidden lg:block  border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       {/* Table header */}
@@ -86,7 +88,15 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-end gap-2">
+                {low && (
+                <button
+                    onClick={() => onQuickOrder(med.id)}
+                    className="text-xs font-medium text-blue-600 border border-blue-200 hover:border-blue-400 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    Beställ
+                  </button>
+                )}
                 {canEdit && (
                   <button
                     onClick={() => onEdit(med)}
@@ -95,7 +105,7 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
                     Redigera
                   </button>
                 )}
-                {canEdit && (
+                {canDelete && (
                   <button
                     onClick={() => deleteConfirmId === med.id ? onDelete(med.id) : setDeleteConfirmId(med.id)}
                     onBlur={() => setDeleteConfirmId(null)}

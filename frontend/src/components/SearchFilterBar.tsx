@@ -1,14 +1,13 @@
 interface Props {
   search: string;
   setSearch: (v: string) => void;
-  formFilter: string;
-  setFormFilter: (v: string) => void;
-  uniqueForms: string[];
+  statusFilter: string;
+  setStatusFilter: (v: string) => void;
   openAdd: () => void;
   canEdit: boolean;
 }
 
-export default function SearchFilterBar({ search, setSearch, formFilter, setFormFilter, uniqueForms, openAdd, canEdit }: Props) {
+export default function SearchFilterBar({ search, setSearch, statusFilter, setStatusFilter, openAdd, canEdit }: Props) {
   return (
     <div className="bg-white w-full border border-slate-200 rounded-xl shadow-sm px-4 sm:px-5 py-4">
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
@@ -34,31 +33,22 @@ export default function SearchFilterBar({ search, setSearch, formFilter, setForm
           </div>
         </div>
         <div className="flex items-end gap-4">
-          <div className="sm:w-52">
+          <div className="sm:w-44">
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-              Form (beredningsform)
+              Filtrera på status
             </label>
             <select
-              value={formFilter}
-              onChange={(e) => setFormFilter(e.target.value)}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 sm:py-2 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
             >
-              <option value="">Alla former</option>
-              {uniqueForms.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
+              <option value="">Alla</option>
+              <option value="low">Lågt lager</option>
+              <option value="ok">OK</option>
             </select>
           </div>
-          {/* {(search || formFilter) && (
-            <button
-              onClick={() => { setSearch(''); setFormFilter(''); }}
-              className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              Clear
-            </button>
-          )} */}
 
-          {canEdit && <div className="hidden lg:block h-10 w-px bg-slate-200 "></div>}
+          {canEdit && <div className="hidden lg:block h-10 w-px bg-slate-200"></div>}
 
           {canEdit && <button
             className="hidden lg:flex h-fit max-lg:w-full items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer sm:whitespace-nowrap sm:flex-shrink-0"
