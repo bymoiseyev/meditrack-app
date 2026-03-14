@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext.js';
 import Sidebar from './components/Sidebar.js';
 import MedicationRegistry from './pages/MedicationRegistry.js';
 import OrderManagement from './pages/OrderManagement.js';
+import AuditLog from './pages/AuditLog.js';
 import Login from './pages/Login.js';
 
 function AppShell() {
@@ -35,6 +36,9 @@ function AppShell() {
         )}
         {currentPage === 'orders' && (
           <OrderManagement quickOrderMedId={quickOrderMedId} onQuickOrderConsumed={() => setQuickOrderMedId(null)} />
+        )}
+        {currentPage === 'auditLog' && (
+          <AuditLog />
         )}
       </div>
     </div>
