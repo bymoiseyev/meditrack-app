@@ -39,13 +39,14 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
           return (
             <div
               key={med.id}
-              className={`grid ${GRID} items-center gap-4 px-6 py-4 ${
-                i < filtered.length - 1 ? 'border-b border-slate-100' : ''
-              } hover:bg-slate-50/60 transition-colors`}
+              className={`grid ${GRID} items-center gap-4 px-6 py-4 ${i < filtered.length - 1 ? 'border-b border-slate-100' : ''
+                } hover:bg-slate-50/60 transition-colors`}
             >
               {/* Name */}
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className={`flex-shrink-0 w-2 h-2 rounded-full ${low ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                <span className={`flex-shrink-0 w-2 h-2 rounded-full relative ${low ? 'bg-red-500 ' : 'bg-emerald-500'}`} >
+                  <span className={` absolute w-2 h-2 rounded-full top-0 left-0 ${low ? 'bg-red-500 animate-ping' : 'bg-emerald-500'}`} />
+                </span>
                 <span className="font-semibold text-slate-800 truncate">{med.name}</span>
               </div>
 
@@ -90,7 +91,7 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
               {/* Actions */}
               <div className="flex items-center justify-end gap-2">
                 {low && (
-                <button
+                  <button
                     onClick={() => onQuickOrder(med.id)}
                     className="text-xs font-medium text-blue-600 border border-blue-200 hover:border-blue-400 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                   >
@@ -109,11 +110,10 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
                   <button
                     onClick={() => deleteConfirmId === med.id ? onDelete(med.id) : setDeleteConfirmId(med.id)}
                     onBlur={() => setDeleteConfirmId(null)}
-                    className={`text-xs whitespace-nowrap font-medium px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      deleteConfirmId === med.id
+                    className={`text-xs whitespace-nowrap font-medium px-3 py-1.5 rounded-lg transition-all cursor-pointer ${deleteConfirmId === med.id
                         ? 'font-semibold text-white bg-red-500 hover:bg-red-600 border border-red-500'
                         : 'text-red-500 border border-red-200 hover:border-red-400 hover:bg-red-50'
-                    }`}
+                      }`}
                   >
                     {deleteConfirmId === med.id ? 'Bekräfta?' : 'Ta bort'}
                   </button>

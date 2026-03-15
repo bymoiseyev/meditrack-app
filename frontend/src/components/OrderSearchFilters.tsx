@@ -18,7 +18,7 @@ interface Props {
   careUnits: CareUnit[];
 }
 
-export default function OrderFilters({
+export default function OrderSearchFilters({
   searchId,
   setSearchId,
   careUnitFilter,

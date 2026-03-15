@@ -3,6 +3,7 @@ import type { CareUnit, OrderMedication, OrderLine } from '../types/order.js';
 import { parseOrderText } from '../api/ai.js';
 
 interface FormErrors {
+  careUnit?: string;
   medication?: string;
   quantity?: string;
 }
@@ -20,7 +21,7 @@ interface Props {
   onQuickOrderConsumed: () => void;
 }
 
-export default function NewOrderPanel({ careUnits, medications, onSave, quickOrderMedId, onQuickOrderConsumed }: Props) {
+export default function OrderCreatePanel({ careUnits, medications, onSave, quickOrderMedId, onQuickOrderConsumed }: Props) {
   const [careUnitId, setCareUnitId] = useState('');
   const [medicationId, setMedicationId] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -44,6 +45,7 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
 
   function validateRow(): boolean {
     const e: FormErrors = {};
+    if (!careUnitId) e.careUnit = 'Välj en vårdenhet';
     if (!medicationId) e.medication = 'Välj ett läkemedel';
     const qty = Number(quantity);
     if (!quantity.trim() || isNaN(qty) || qty <= 0 || !Number.isInteger(qty)) {
@@ -147,16 +149,14 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
   }
 
   return (
-    <div>
-
-
+    <div className=' 2xl:sticky  2xl:top-0 '>
       <div className="flex items-center  mb-3">
         <h2 className="text-sm font-semibold text-slate-700">
           Ny order
         </h2>
 
       </div>
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm" id="new-order-panel">
+      <div className="bg-white border  border-slate-200 rounded-xl shadow-sm" id="new-order-panel">
 
         {/* Panel header */}
         <div className="px-5 pt-5 pb-4">
@@ -169,13 +169,11 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
         {/* AI input */}
         <div className="px-5 ">
           <div className="flex items-center gap-2 mb-2">
-            <div className="text-[10px] flex items-center font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md tracking-wider">
+            <div className="text-[10px] flex items-center justify-center font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md tracking-wider">
               <span>
                 AI
               </span>
-              <svg color='#2563EB' fill="currentColor" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clipRule="evenodd" />
-              </svg>
+
             </div>
             <span className="text-xs font-semibold text-slate-700 uppercase">Beskriv din beställning</span>
             {/* <span className="flex-shrink-0 inline-flex items-center justify-center  text-white">
@@ -205,6 +203,9 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
                 </svg>
               )}
               {aiLoading ? 'Fyller i…' : 'Fyll i automatiskt'}
+              <svg color='white' fill="currentColor" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clipRule="evenodd" />
+              </svg>
             </button>
           </div>
           {aiError && (
@@ -266,14 +267,17 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
             </label>
             <select
               value={careUnitId}
-              onChange={(e) => setCareUnitId(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
+              onChange={(e) => { setCareUnitId(e.target.value); setErrors((prev) => { const { careUnit: _, ...rest } = prev; return rest; }); }}
+              className={`w-full border rounded-lg px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 ${errors.careUnit ? 'border-red-400' : 'border-slate-200'}`}
             >
               <option value="">Välj vårdenhet…</option>
               {careUnits.map((cu) => (
                 <option key={cu.id} value={cu.id}>{cu.name}</option>
               ))}
             </select>
+            {errors.careUnit && (
+              <p className="mt-1 text-xs text-red-500">{errors.careUnit}</p>
+            )}
           </div>
 
           {/* Add row section */}
@@ -319,7 +323,7 @@ export default function NewOrderPanel({ careUnits, medications, onSave, quickOrd
               </div>
               <button
                 onClick={handleAddRow}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-600 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                className="flex items-center h-9.5 gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-600 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

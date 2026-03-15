@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Medication, FormState } from '../types/medication.js';
 import { useAuth } from '../context/AuthContext.js';
 import { getMedications, createMedication, updateMedication, deleteMedication } from '../api/medications.js';
-import SearchFilterBar from '../components/SearchFilterBar.js';
+import MedicationSearchFilters from '../components/MedicationSearchFilters.js';
 import MedicationTable from '../components/MedicationTable.js';
 import MedicationCards from '../components/MedicationCards.js';
 import MedicationFormModal from '../components/MedicationFormModal.js';
@@ -167,7 +167,7 @@ export default function MedicationRegistry({ onQuickOrder }: Props) {
         )}
 
         <div className='flex flex-col gap-4 mb-4 justify-between items-end w-full'>
-          <SearchFilterBar
+          <MedicationSearchFilters
             search={search}
             setSearch={setSearch}
             statusFilter={statusFilter}
