@@ -29,7 +29,7 @@ export default function OrdersList({ orders, onView }: Props) {
   return (
     <>
       {/* Desktop table — hidden on mobile */}
-      <div className="hidden lg:block bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="hidden lg:block bg-white border h-full  border-slate-200 rounded-xl shadow-sm overflow-hidden  2xl:pr-1 ">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">

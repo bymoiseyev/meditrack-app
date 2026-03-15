@@ -2,7 +2,7 @@ import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/re
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 afterEach(cleanup);
-import NewOrderPanel from '../components/NewOrderPanel.js';
+import NewOrderPanel from '../components/OrderCreatePanel.js';
 import type { CareUnit, OrderMedication } from '../types/order.js';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -34,7 +34,8 @@ function getMedicationSelect() { return screen.getAllByRole('combobox')[1] as HT
 function getSaveButton()       { return screen.getByRole('button', { name: /skapa beställning/i }) as HTMLButtonElement; }
 function getQuantityInput()    { return screen.getByPlaceholderText('Kvantitet') as HTMLInputElement; }
 
-function addRow(medicationId: string, qty: string) {
+function addRow(medicationId: string, qty: string, careUnitId = 'cu-1') {
+  fireEvent.change(getCareUnitSelect(),   { target: { value: careUnitId } });
   fireEvent.change(getMedicationSelect(), { target: { value: medicationId } });
   fireEvent.change(getQuantityInput(),    { target: { value: qty } });
   fireEvent.click(screen.getByRole('button', { name: /lägg till rad/i }));

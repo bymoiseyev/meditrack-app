@@ -7,7 +7,7 @@ interface Props {
   canEdit: boolean;
 }
 
-export default function SearchFilterBar({ search, setSearch, statusFilter, setStatusFilter, openAdd, canEdit }: Props) {
+export default function MedicationSearchFilters({ search, setSearch, statusFilter, setStatusFilter, openAdd, canEdit }: Props) {
   return (
     <div className="bg-white w-full border border-slate-200 rounded-xl shadow-sm px-4 sm:px-5 py-4">
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">

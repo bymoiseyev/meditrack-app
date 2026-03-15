@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { Order, CareUnit, OrderMedication } from '../types/order.js';
-import type { NewOrderPayload } from '../components/NewOrderPanel.js';
+import type { NewOrderPayload } from '../components/OrderCreatePanel.js';
 import { getOrders, createOrder, advanceOrderStatus } from '../api/orders.js';
 import { getCareUnits } from '../api/careUnits.js';
 import { getMedications } from '../api/medications.js';
-import OrderFilters from '../components/OrderFilters.js';
+import OrderSearchFilters from '../components/OrderSearchFilters.js';
 import OrdersList from '../components/OrdersList.js';
-import NewOrderPanel from '../components/NewOrderPanel.js';
+import OrderCreatePanel from '../components/OrderCreatePanel.js';
 import OrderDetailsModal from '../components/OrderDetailsModal.js';
 
 interface Props {
@@ -15,15 +15,15 @@ interface Props {
 }
 
 export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed }: Props) {
-  const [orders, setOrders]       = useState<Order[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [careUnits, setCareUnits] = useState<CareUnit[]>([]);
   const [medications, setMedications] = useState<OrderMedication[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [apiError, setApiError]   = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const [searchId, setSearchId]           = useState('');
+  const [searchId, setSearchId] = useState('');
   const [careUnitFilter, setCareUnitFilter] = useState('');
-  const [statusFilter, setStatusFilter]   = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [viewingOrderId, setViewingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
 
         {/* Filters */}
         <div className="mb-5">
-          <OrderFilters
+          <OrderSearchFilters
             searchId={searchId}
             setSearchId={setSearchId}
             careUnitFilter={careUnitFilter}
@@ -121,7 +121,7 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
         <div className="grid grid-cols-1 2xl:grid-cols-[1fr_380px] gap-6 items-start">
 
           {/* Left: order history */}
-          <div className="order-2 2xl:order-1">
+          <div className="order-2 2xl:order-1 ">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-slate-700">
                 Beställningshistorik
@@ -137,7 +137,7 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
 
           {/* Right: new order panel */}
           <div className="order-1 2xl:order-2 2xl:sticky 2xl:top-6">
-            <NewOrderPanel
+            <OrderCreatePanel
               careUnits={careUnits}
               medications={medications}
               onSave={handleSaveOrder}
@@ -150,6 +150,7 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
       </div>
 
       {/* Order detail modal */}
+      
       {viewingOrder && (
         <OrderDetailsModal
           order={viewingOrder}
