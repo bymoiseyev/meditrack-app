@@ -5,7 +5,9 @@
 MediTrack is an internal tool for managing medication orders and stock levels across care units. Today many care units rely on manual lists and email, which creates unnecessary risks and delays. MediTrack digitizes that flow, from order to delivery, getting the right information to the right person at the right time.
 
 ---
+
 <img width="1713" height="898" alt="Skärmbild 2026-03-16 172504" src="https://github.com/user-attachments/assets/6b7b868e-a475-4f42-8452-ab16a95c5964" />
+
 ---
 
 ## 2. Technical Choices & Architecture
@@ -89,11 +91,10 @@ User can describe an order in free-text Swedish and the app sends that input to 
 - JWT token is stored in localStorage, which is vulnerable to XSS attacks, something I noticed but chose to document and reflect on rather than patch over. In production this should be moved to an HttpOnly cookie.
 - Login has a 2 second delay on failed attempts as a basic brute force mitigation, but there is no proper rate limiter that blocks repeated attempts entirely.
 - The JWT token expiry is set to 7 days for the sake of the demo. In production this should be much shorter, ideally 15-30 minutes, paired with a refresh token that silently issues a new access token without forcing the user to log in again. Without a refresh token, a short expiry just means the user gets kicked out mid-session with no recovery.
-- The AI feature sends the full medication and care unit list in every prompt, this does not scale with a large dataset.
+- The AI feature sends the full medication and care unit list in every prompt, this does not scale with a large dataset. A vector database could be one solution for larger catalogs.
 - No user registration UI, users are currently created via database seed only.
-- No HTTPS, all traffic runs over plain HTTP locally.
 - At the start I calculated the app would be two pages at most, so I used state-based navigation to keep things simple and move fast. After completing the mandatory parts ahead of time I added authentication, an audit log and at that point state-based navigation was no longer the right fit. It works, but it was a scope decision, not a technical preference. React Router would be the natural choice in any real application.
-- Git commit messages are inconsistent in style throughout the project, some follow conventional commits, others do not. Having mostly worked solo, consistent commit conventions haven't been a hard requirement, but it is something I am actively improving on.
+- Git commit messages are inconsistent in style throughout the project, some follow conventional commits, others do not. Having mostly worked solo and very small teams, consistent commit conventions haven't been a hard requirement, but it is something I am actively improving on.
 
 ---
 
@@ -106,5 +107,7 @@ User can describe an order in free-text Swedish and the app sends that input to 
 - Add real-time low stock notifications, currently the threshold warning is visible in the UI but there is no active notification when stock drops.
 - Implement pagination on the orders and medication list, right now everything loads at once which does not scale.
 - Add React Router for proper client-side routing instead of the current manual approach.
+- Add pagination to the medications and orders lists, fine for a demo dataset but loading everything at once does
+  not scale to production.
 - Write more comprehensive tests, currently there is coverage on the order panel and auth but several handlers and UI flows are untested.
 - Short-lived access tokens with a refresh token mechanism for more secure session handling.
