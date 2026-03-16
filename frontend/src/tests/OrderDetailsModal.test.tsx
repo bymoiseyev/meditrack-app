@@ -1,3 +1,6 @@
+// Tests for the order details modal — covers the correct advance button label per status,
+// that no advance button shows on Levererad, that advancing calls the right handler,
+// and that order content (ID, care unit, line items) is displayed correctly.
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 

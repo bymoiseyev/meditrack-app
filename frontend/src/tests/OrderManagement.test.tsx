@@ -1,3 +1,5 @@
+// Tests for the order management page — covers the filter logic (by status, care unit,
+// and combined), and that creating a new order adds it to the list with the correct status.
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 

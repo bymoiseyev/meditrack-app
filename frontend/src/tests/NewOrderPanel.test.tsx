@@ -1,3 +1,5 @@
+// Tests for the new order form — covers row validation (medication, quantity, care unit),
+// adding and removing rows, save button state, and the full save payload.
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
