@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Page } from './types/navigation.js';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
 import Sidebar from './components/Sidebar.js';
@@ -6,11 +6,20 @@ import MedicationRegistry from './pages/MedicationRegistry.js';
 import OrderManagement from './pages/OrderManagement.js';
 import AuditLog from './pages/AuditLog.js';
 import Login from './pages/Login.js';
+import { getMedications } from './api/medications.js';
 
 function AppShell() {
   const { user, loading, logout } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>('medications');
   const [quickOrderMedId, setQuickOrderMedId] = useState<string | null>(null);
+  const [lowStockCount, setLowStockCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    getMedications()
+      .then((meds) => setLowStockCount(meds.filter((m) => m.stockBalance <= m.threshold && m.threshold > 0).length))
+      .catch(() => {});
+  }, [user]);
 
   if (loading) {
     return (
@@ -29,7 +38,7 @@ function AppShell() {
 
   return (
     <div className="min-h-screen flex bg-zinc-50/50">
-      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} user={user} onLogout={logout} />
+      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} user={user} onLogout={logout} lowStockCount={lowStockCount} />
       <div className="flex-1 min-w-0">
         {currentPage === 'medications' && (
           <MedicationRegistry onQuickOrder={handleQuickOrder} />
