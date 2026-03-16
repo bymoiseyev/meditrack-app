@@ -91,6 +91,7 @@ Nurses can describe an order in free-text Swedish and the app sends that input t
 - No user registration UI, users are currently created via database seed only.
 - No HTTPS, all traffic runs over plain HTTP locally.
 - At the start I calculated the app would be two pages at most, so I used state-based navigation to keep things simple and move fast. After completing the mandatory parts ahead of time I added authentication, an audit log and at that point state-based navigation was no longer the right fit. It works, but it was a scope decision, not a technical preference. React Router would be the natural choice in any real application.
+- Git commit messages are inconsistent in style throughout the project, some follow conventional commits, others do not. Having mostly worked solo, consistent commit conventions haven't been a hard requirement, but it is something I am actively improving on.
 
 ---
 
