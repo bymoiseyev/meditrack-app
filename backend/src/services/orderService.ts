@@ -102,6 +102,8 @@ export async function advanceOrderStatus(id: number) {
     return { order: formatOrder(updated!), from: order.status, to: next };
   }
 
+   // Only update if the status hasn't changed since we read it.
+  // If another request advanced it first, count will be 0 and we return a 409.
   const result = await prisma.order.updateMany({
     where: { id, status: order.status },
     data:  { status: next },

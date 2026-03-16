@@ -9,7 +9,6 @@ import {
   createMedication,
   updateMedication,
   medicationExists,
-  medicationHasOrders,
   deleteMedication,
   getMedicationSnapshot,
 } from '../services/medicationService.js';
@@ -124,11 +123,6 @@ router.delete('/:id', requireRole('Admin'), async (req: Request<{ id: string }>,
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
   if (!(await medicationExists(id))) { res.status(404).json({ error: 'Medication not found' }); return; }
-
-  if (await medicationHasOrders(id)) {
-    res.status(409).json({ error: 'Läkemedlet kan inte tas bort eftersom det finns beställningar kopplade till det.' });
-    return;
-  }
 
   const snapshot = await getMedicationSnapshot(id);
   await deleteMedication(id);
