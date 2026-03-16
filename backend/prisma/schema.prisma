@@ -80,14 +80,14 @@ model Order {
 model OrderLine {
   id               Int        @id @default(autoincrement())
   orderId          Int
-  medicationId     Int
+  medicationId     Int?
   medicationName   String     // snapshot
   form             String     // snapshot
   strength         String     // snapshot
   quantity         Int
 
   order            Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  medication       Medication @relation(fields: [medicationId], references: [id])
+  medication       Medication? @relation(fields: [medicationId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([medicationId])
