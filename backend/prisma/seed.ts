@@ -12,6 +12,7 @@ async function main() {
   console.log('🌱 Seeding database...');
 
   // ─── Clean existing data (order matters due to foreign keys) ──────────────
+  await prisma.auditLog.deleteMany();
   await prisma.orderLine.deleteMany();
   await prisma.order.deleteMany();
   await prisma.medication.deleteMany();
@@ -49,89 +50,59 @@ async function main() {
   console.log('✅ Care units created');
 
   // ─── Medications ──────────────────────────────────────────────────────────
-  const [alvedon, morfin, ipren, kavepenin, fragmin, metformin, furosemid, warfarin] =
-    await Promise.all([
-      prisma.medication.create({
-        data: {
-          name:         'Alvedon',
-          atcCode:      'N02BE01',
-          form:         'Tablett',
-          strength:     '500 mg',
-          stockBalance: 200,
-          threshold:    50,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Morfin',
-          atcCode:      'N02AA01',
-          form:         'Injektion',
-          strength:     '10 mg/ml',
-          stockBalance: 45,
-          threshold:    20,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Ipren',
-          atcCode:      'M01AE01',
-          form:         'Tablett',
-          strength:     '400 mg',
-          stockBalance: 150,
-          threshold:    40,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Kåvepenin',
-          atcCode:      'J01CE01',
-          form:         'Oral lösning',
-          strength:     '125 mg/5 ml',
-          stockBalance: 60,
-          threshold:    15,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Fragmin',
-          atcCode:      'B01AB04',
-          form:         'Injektionslösning',
-          strength:     '2500 IE/0,2 ml',
-          stockBalance: 30,
-          threshold:    10,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Metformin',
-          atcCode:      'A10BA02',
-          form:         'Tablett',
-          strength:     '500 mg',
-          stockBalance: 18,   // intentionally below threshold — triggers low-stock warning
-          threshold:    50,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Furosemid',
-          atcCode:      'C03CA01',
-          form:         'Tablett',
-          strength:     '40 mg',
-          stockBalance: 85,
-          threshold:    30,
-        },
-      }),
-      prisma.medication.create({
-        data: {
-          name:         'Warfarin',
-          atcCode:      'B01AA03',
-          form:         'Tablett',
-          strength:     '5 mg',
-          stockBalance: 110,
-          threshold:    25,
-        },
-      }),
-    ]);
+  const [
+    alvedon, morfin, ipren, kavepenin, fragmin, metformin, furosemid, warfarin,
+    amoxicillin, omeprazol, losartan, simvastatin, oxynorm, betapred, diklofenak, paracetamolMixtur,
+  ] = await Promise.all([
+    prisma.medication.create({
+      data: { name: 'Alvedon', atcCode: 'N02BE01', form: 'Tablett', strength: '500 mg', stockBalance: 200, threshold: 50 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Morfin', atcCode: 'N02AA01', form: 'Injektion', strength: '10 mg/ml', stockBalance: 45, threshold: 20 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Ipren', atcCode: 'M01AE01', form: 'Tablett', strength: '400 mg', stockBalance: 150, threshold: 40 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Kåvepenin', atcCode: 'J01CE01', form: 'Oral lösning', strength: '125 mg/5 ml', stockBalance: 60, threshold: 15 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Fragmin', atcCode: 'B01AB04', form: 'Injektionslösning', strength: '2500 IE/0,2 ml', stockBalance: 30, threshold: 10 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Metformin', atcCode: 'A10BA02', form: 'Tablett', strength: '500 mg', stockBalance: 18, threshold: 50 }, // below threshold
+    }),
+    prisma.medication.create({
+      data: { name: 'Furosemid', atcCode: 'C03CA01', form: 'Tablett', strength: '40 mg', stockBalance: 85, threshold: 30 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Warfarin', atcCode: 'B01AA03', form: 'Tablett', strength: '5 mg', stockBalance: 110, threshold: 25 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Amoxicillin', atcCode: 'J01CA04', form: 'Kapsel', strength: '500 mg', stockBalance: 12, threshold: 40 }, // below threshold
+    }),
+    prisma.medication.create({
+      data: { name: 'Omeprazol', atcCode: 'A02BC01', form: 'Kapsel', strength: '20 mg', stockBalance: 95, threshold: 30 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Losartan', atcCode: 'C09CA01', form: 'Tablett', strength: '50 mg', stockBalance: 130, threshold: 35 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Simvastatin', atcCode: 'C10AA01', form: 'Tablett', strength: '20 mg', stockBalance: 8, threshold: 30 }, // below threshold
+    }),
+    prisma.medication.create({
+      data: { name: 'OxyNorm', atcCode: 'N02AA05', form: 'Oral lösning', strength: '5 mg/ml', stockBalance: 22, threshold: 10 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Betapred', atcCode: 'H02AB02', form: 'Tablett', strength: '0,5 mg', stockBalance: 75, threshold: 20 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Diklofenak', atcCode: 'M01AB05', form: 'Tablett', strength: '50 mg', stockBalance: 60, threshold: 25 },
+    }),
+    prisma.medication.create({
+      data: { name: 'Paracetamol mixtur', atcCode: 'N02BE01', form: 'Oral lösning', strength: '24 mg/ml', stockBalance: 18, threshold: 20 }, // below threshold
+    }),
+  ]);
   console.log('✅ Medications created');
 
   // ─── Orders ───────────────────────────────────────────────────────────────
@@ -281,20 +252,118 @@ async function main() {
       createdAt:  new Date('2026-03-11T09:05:00Z'),
       lines: {
         create: [
-          {
-            medicationId:   kavepenin.id,
-            medicationName: kavepenin.name,
-            form:           kavepenin.form,
-            strength:       kavepenin.strength,
-            quantity:       40,
-          },
-          {
-            medicationId:   alvedon.id,
-            medicationName: alvedon.name,
-            form:           alvedon.form,
-            strength:       alvedon.strength,
-            quantity:       150,
-          },
+          { medicationId: kavepenin.id, medicationName: kavepenin.name, form: kavepenin.form, strength: kavepenin.strength, quantity: 40 },
+          { medicationId: alvedon.id,   medicationName: alvedon.name,   form: alvedon.form,   strength: alvedon.strength,   quantity: 150 },
+        ],
+      },
+    },
+  });
+
+  // Levererad — IVA, older order
+  await prisma.order.create({
+    data: {
+      careUnitId:  iva.id,
+      status:      'Levererad',
+      deliveredAt: new Date('2026-02-20T14:00:00Z'),
+      createdAt:   new Date('2026-02-19T10:30:00Z'),
+      lines: {
+        create: [
+          { medicationId: morfin.id,   medicationName: morfin.name,   form: morfin.form,   strength: morfin.strength,   quantity: 25 },
+          { medicationId: fragmin.id,  medicationName: fragmin.name,  form: fragmin.form,  strength: fragmin.strength,  quantity: 60 },
+          { medicationId: betapred.id, medicationName: betapred.name, form: betapred.form, strength: betapred.strength, quantity: 50 },
+        ],
+      },
+    },
+  });
+
+  // Levererad — Akutmottagningen, older order
+  await prisma.order.create({
+    data: {
+      careUnitId:  akuten.id,
+      status:      'Levererad',
+      deliveredAt: new Date('2026-02-25T11:00:00Z'),
+      createdAt:   new Date('2026-02-24T08:00:00Z'),
+      lines: {
+        create: [
+          { medicationId: omeprazol.id,  medicationName: omeprazol.name,  form: omeprazol.form,  strength: omeprazol.strength,  quantity: 80 },
+          { medicationId: diklofenak.id, medicationName: diklofenak.name, form: diklofenak.form, strength: diklofenak.strength, quantity: 40 },
+        ],
+      },
+    },
+  });
+
+  // Bekräftad — Barnmedicin
+  await prisma.order.create({
+    data: {
+      careUnitId: barnmed.id,
+      status:     'Bekräftad',
+      createdAt:  new Date('2026-03-12T10:15:00Z'),
+      lines: {
+        create: [
+          { medicationId: paracetamolMixtur.id, medicationName: paracetamolMixtur.name, form: paracetamolMixtur.form, strength: paracetamolMixtur.strength, quantity: 30 },
+          { medicationId: amoxicillin.id,       medicationName: amoxicillin.name,       form: amoxicillin.form,       strength: amoxicillin.strength,       quantity: 60 },
+        ],
+      },
+    },
+  });
+
+  // Skickad — Avdelning 2B
+  await prisma.order.create({
+    data: {
+      careUnitId: avd2B.id,
+      status:     'Skickad',
+      createdAt:  new Date('2026-03-13T07:50:00Z'),
+      lines: {
+        create: [
+          { medicationId: losartan.id,    medicationName: losartan.name,    form: losartan.form,    strength: losartan.strength,    quantity: 100 },
+          { medicationId: simvastatin.id, medicationName: simvastatin.name, form: simvastatin.form, strength: simvastatin.strength, quantity: 80 },
+          { medicationId: warfarin.id,    medicationName: warfarin.name,    form: warfarin.form,    strength: warfarin.strength,    quantity: 50 },
+        ],
+      },
+    },
+  });
+
+  // Utkast — IVA, pain management
+  await prisma.order.create({
+    data: {
+      careUnitId: iva.id,
+      status:     'Utkast',
+      createdAt:  new Date('2026-03-14T15:30:00Z'),
+      lines: {
+        create: [
+          { medicationId: oxynorm.id, medicationName: oxynorm.name, form: oxynorm.form, strength: oxynorm.strength, quantity: 10 },
+          { medicationId: morfin.id,  medicationName: morfin.name,  form: morfin.form,  strength: morfin.strength,  quantity: 20 },
+        ],
+      },
+    },
+  });
+
+  // Utkast — Avdelning 1A
+  await prisma.order.create({
+    data: {
+      careUnitId: avd1A.id,
+      status:     'Utkast',
+      createdAt:  new Date('2026-03-15T08:20:00Z'),
+      lines: {
+        create: [
+          { medicationId: metformin.id,  medicationName: metformin.name,  form: metformin.form,  strength: metformin.strength,  quantity: 150 },
+          { medicationId: omeprazol.id,  medicationName: omeprazol.name,  form: omeprazol.form,  strength: omeprazol.strength,  quantity: 60 },
+        ],
+      },
+    },
+  });
+
+  // Levererad — Avdelning 2B, recent
+  await prisma.order.create({
+    data: {
+      careUnitId:  avd2B.id,
+      status:      'Levererad',
+      deliveredAt: new Date('2026-03-10T13:00:00Z'),
+      createdAt:   new Date('2026-03-09T09:00:00Z'),
+      lines: {
+        create: [
+          { medicationId: furosemid.id, medicationName: furosemid.name, form: furosemid.form, strength: furosemid.strength, quantity: 120 },
+          { medicationId: ipren.id,     medicationName: ipren.name,     form: ipren.form,     strength: ipren.strength,     quantity: 80 },
         ],
       },
     },
