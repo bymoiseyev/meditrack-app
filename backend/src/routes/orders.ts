@@ -33,7 +33,7 @@ router.get('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const orders = await getOrders(parsedCareUnitId, status as OrderStatus | undefined);
+  const orders = await getOrders(parsedCareUnitId ?? undefined, status as OrderStatus | undefined);
   res.json(orders);
 });
 
@@ -92,8 +92,8 @@ router.post('/', async (req: Request, res: Response) => {
   const order = await createOrder(careUnitId, lines, medMap);
 
   await logAction(req.user!, 'ORDER_CREATED', 'Order', Number(order.id.replace('ORD-', '')), {
-    careUnitId: order.careUnitId,
-    lineCount:  order.lines.length,
+    careUnitId,
+    lineCount:  lines.length,
   });
 
   res.status(201).json(order);
