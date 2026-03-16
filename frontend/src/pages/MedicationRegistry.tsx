@@ -142,8 +142,8 @@ export default function MedicationRegistry({ onQuickOrder }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/50">
-      <div className=" mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden lg:flex lg:flex-col bg-zinc-50/50">
+      <div className="mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 lg:flex lg:flex-col lg:flex-1 lg:overflow-hidden lg:min-h-0">
 
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
@@ -186,32 +186,34 @@ export default function MedicationRegistry({ onQuickOrder }: Props) {
           </button>}
         </div>
 
-        <MedicationTable
-          filtered={filtered}
-          deleteConfirmId={deleteConfirmId}
-          setDeleteConfirmId={setDeleteConfirmId}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-          onQuickOrder={onQuickOrder}
-          canEdit={canEdit}
-          canDelete={canDelete}
-        />
-        <MedicationCards
-          filtered={filtered}
-          deleteConfirmId={deleteConfirmId}
-          setDeleteConfirmId={setDeleteConfirmId}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-          onQuickOrder={onQuickOrder}
-          canEdit={canEdit}
-          canDelete={canDelete}
-        />
+        <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
+          <MedicationTable
+            filtered={filtered}
+            deleteConfirmId={deleteConfirmId}
+            setDeleteConfirmId={setDeleteConfirmId}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            onQuickOrder={onQuickOrder}
+            canEdit={canEdit}
+            canDelete={canDelete}
+          />
+          <MedicationCards
+            filtered={filtered}
+            deleteConfirmId={deleteConfirmId}
+            setDeleteConfirmId={setDeleteConfirmId}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            onQuickOrder={onQuickOrder}
+            canEdit={canEdit}
+            canDelete={canDelete}
+          />
 
-        {(search || statusFilter) && (
-          <p className="mt-3 text-xs text-slate-400 text-right">
-            {filtered.length} av {medications.length} läkemedel
-          </p>
-        )}
+          {(search || statusFilter) && (
+            <p className="mt-3 text-xs text-slate-400 text-right">
+              {filtered.length} av {medications.length} läkemedel
+            </p>
+          )}
+        </div>
       </div>
 
       {modalOpen && (

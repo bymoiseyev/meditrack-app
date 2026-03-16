@@ -1,25 +1,30 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import prisma from '../lib/prisma.js';
 import { requireRole } from '../lib/auth.js';
 import { logAction } from '../lib/audit.js';
+import { parseId } from '../lib/parseId.js';
+import {
+  getMedications,
+  getMedicationById,
+  createMedication,
+  updateMedication,
+  medicationExists,
+  medicationHasOrders,
+  deleteMedication,
+  getMedicationSnapshot,
+} from '../services/medicationService.js';
 
 const router = Router();
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function parseId(raw: string): number | null {
-  const n = parseInt(raw, 10);
-  return Number.isInteger(n) && n > 0 ? n : null;
-}
+// ─── Validation ───────────────────────────────────────────────────────────────
 
 function validateMedicationBody(body: Record<string, unknown>): string | null {
   const { name, atcCode, form, strength, stockBalance, threshold } = body;
 
-  if (!name       || typeof name       !== 'string' || name.trim()       === '') return 'name is required';
-  if (!atcCode    || typeof atcCode    !== 'string' || atcCode.trim()    === '') return 'atcCode is required';
-  if (!form       || typeof form       !== 'string' || form.trim()       === '') return 'form is required';
-  if (!strength   || typeof strength   !== 'string' || strength.trim()   === '') return 'strength is required';
+  if (!name     || typeof name     !== 'string' || name.trim()     === '') return 'name is required';
+  if (!atcCode  || typeof atcCode  !== 'string' || atcCode.trim()  === '') return 'atcCode is required';
+  if (!form     || typeof form     !== 'string' || form.trim()     === '') return 'form is required';
+  if (!strength || typeof strength !== 'string' || strength.trim() === '') return 'strength is required';
 
   if (stockBalance !== undefined) {
     const sb = Number(stockBalance);
@@ -38,20 +43,7 @@ function validateMedicationBody(body: Record<string, unknown>): string | null {
 router.get('/', async (req: Request, res: Response) => {
   const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
   const form   = typeof req.query.form   === 'string' ? req.query.form.trim()   : undefined;
-
-  const medications = await prisma.medication.findMany({
-    where: {
-      ...(search && {
-        OR: [
-          { name:    { contains: search, mode: 'insensitive' } },
-          { atcCode: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-      ...(form && { form: { equals: form, mode: 'insensitive' } }),
-    },
-    orderBy: { name: 'asc' },
-  });
-
+  const medications = await getMedications(search, form);
   res.json(medications);
 });
 
@@ -61,7 +53,7 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
-  const medication = await prisma.medication.findUnique({ where: { id } });
+  const medication = await getMedicationById(id);
   if (!medication) { res.status(404).json({ error: 'Medication not found' }); return; }
 
   res.json(medication);
@@ -78,15 +70,13 @@ router.post('/', requireRole('Apotekare', 'Admin'), async (req: Request, res: Re
     stockBalance?: number; threshold?: number;
   };
 
-  const medication = await prisma.medication.create({
-    data: {
-      name:         name.trim(),
-      atcCode:      atcCode.trim(),
-      form:         form.trim(),
-      strength:     strength.trim(),
-      stockBalance: Number(stockBalance),
-      threshold:    Number(threshold),
-    },
+  const medication = await createMedication({
+    name:         name.trim(),
+    atcCode:      atcCode.trim(),
+    form:         form.trim(),
+    strength:     strength.trim(),
+    stockBalance: Number(stockBalance),
+    threshold:    Number(threshold),
   });
 
   await logAction(req.user!, 'MEDICATION_CREATED', 'Medication', medication.id, {
@@ -106,24 +96,20 @@ router.put('/:id', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: 
   const error = validateMedicationBody(req.body);
   if (error) { res.status(400).json({ error }); return; }
 
-  const exists = await prisma.medication.findUnique({ where: { id }, select: { id: true } });
-  if (!exists) { res.status(404).json({ error: 'Medication not found' }); return; }
+  if (!(await medicationExists(id))) { res.status(404).json({ error: 'Medication not found' }); return; }
 
   const { name, atcCode, form, strength, stockBalance, threshold } = req.body as {
     name: string; atcCode: string; form: string; strength: string;
     stockBalance: number; threshold: number;
   };
 
-  const medication = await prisma.medication.update({
-    where: { id },
-    data: {
-      name:         name.trim(),
-      atcCode:      atcCode.trim(),
-      form:         form.trim(),
-      strength:     strength.trim(),
-      stockBalance: Number(stockBalance),
-      threshold:    Number(threshold),
-    },
+  const medication = await updateMedication(id, {
+    name:         name.trim(),
+    atcCode:      atcCode.trim(),
+    form:         form.trim(),
+    strength:     strength.trim(),
+    stockBalance: Number(stockBalance),
+    threshold:    Number(threshold),
   });
 
   await logAction(req.user!, 'MEDICATION_UPDATED', 'Medication', id, { name: medication.name });
@@ -137,21 +123,19 @@ router.delete('/:id', requireRole('Admin'), async (req: Request<{ id: string }>,
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
-  const exists = await prisma.medication.findUnique({ where: { id }, select: { id: true } });
-  if (!exists) { res.status(404).json({ error: 'Medication not found' }); return; }
+  if (!(await medicationExists(id))) { res.status(404).json({ error: 'Medication not found' }); return; }
 
-  const orderLineCount = await prisma.orderLine.count({ where: { medicationId: id } });
-  if (orderLineCount > 0) {
+  if (await medicationHasOrders(id)) {
     res.status(409).json({ error: 'Läkemedlet kan inte tas bort eftersom det finns beställningar kopplade till det.' });
     return;
   }
 
-  const deleted = await prisma.medication.findUnique({ where: { id }, select: { name: true, atcCode: true } });
-  await prisma.medication.delete({ where: { id } });
+  const snapshot = await getMedicationSnapshot(id);
+  await deleteMedication(id);
 
   await logAction(req.user!, 'MEDICATION_DELETED', 'Medication', id, {
-    name: deleted!.name,
-    atcCode: deleted!.atcCode,
+    name:    snapshot!.name,
+    atcCode: snapshot!.atcCode,
   });
 
   res.status(204).send();

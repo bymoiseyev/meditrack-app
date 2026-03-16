@@ -1,36 +1,21 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { OrderStatus } from '@prisma/client';
-import prisma from '../lib/prisma.js';
 import { requireRole } from '../lib/auth.js';
 import { logAction } from '../lib/audit.js';
+import { parseId } from '../lib/parseId.js';
+import {
+  getOrders,
+  getOrderById,
+  careUnitExists,
+  getMedicationsForLines,
+  createOrder,
+  advanceOrderStatus,
+} from '../services/orderService.js';
 
 const router = Router();
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const VALID_STATUSES = Object.values(OrderStatus);
-
-const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
-  Utkast:    OrderStatus.Skickad,
-  Skickad:   OrderStatus.Bekräftad,
-  Bekräftad: OrderStatus.Levererad,
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function parseId(raw: string): number | null {
-  const n = parseInt(raw, 10);
-  return Number.isInteger(n) && n > 0 ? n : null;
-}
-
-function formatOrderId(id: number): string {
-  return `ORD-${String(id).padStart(4, '0')}`;
-}
-
-function formatOrder(order: { id: number; [key: string]: unknown }) {
-  return { ...order, id: formatOrderId(order.id) };
-}
 
 // ─── GET /orders ──────────────────────────────────────────────────────────────
 
@@ -48,19 +33,8 @@ router.get('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const orders = await prisma.order.findMany({
-    where: {
-      ...(parsedCareUnitId && { careUnitId: parsedCareUnitId }),
-      ...(status            && { status:     status as OrderStatus }),
-    },
-    include: {
-      careUnit: { select: { id: true, name: true } },
-      lines:    true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  res.json(orders.map(formatOrder));
+  const orders = await getOrders(parsedCareUnitId, status as OrderStatus | undefined);
+  res.json(orders);
 });
 
 // ─── GET /orders/:id ──────────────────────────────────────────────────────────
@@ -69,26 +43,16 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: {
-      careUnit: { select: { id: true, name: true } },
-      lines:    true,
-    },
-  });
-
+  const order = await getOrderById(id);
   if (!order) { res.status(404).json({ error: 'Order not found' }); return; }
 
-  res.json(formatOrder(order));
+  res.json(order);
 });
 
 // ─── POST /orders ─────────────────────────────────────────────────────────────
 
 router.post('/', async (req: Request, res: Response) => {
-  const { careUnitId, lines } = req.body as {
-    careUnitId?: unknown;
-    lines?: unknown;
-  };
+  const { careUnitId, lines } = req.body as { careUnitId?: unknown; lines?: unknown };
 
   if (!careUnitId || typeof careUnitId !== 'number' || !Number.isInteger(careUnitId) || careUnitId < 1) {
     res.status(400).json({ error: 'careUnitId must be a positive integer' });
@@ -111,16 +75,13 @@ router.post('/', async (req: Request, res: Response) => {
     }
   }
 
-  // Verify care unit exists
-  const careUnit = await prisma.careUnit.findUnique({ where: { id: careUnitId }, select: { id: true } });
-  if (!careUnit) { res.status(400).json({ error: 'Care unit not found' }); return; }
+  if (!(await careUnitExists(careUnitId))) {
+    res.status(400).json({ error: 'Care unit not found' });
+    return;
+  }
 
-  // Fetch medication snapshots for all line items
   const medicationIds: number[] = lines.map((l: { medicationId: number }) => l.medicationId);
-  const medications = await prisma.medication.findMany({
-    where: { id: { in: medicationIds } },
-    select: { id: true, name: true, form: true, strength: true },
-  });
+  const medications = await getMedicationsForLines(medicationIds);
 
   if (medications.length !== medicationIds.length) {
     res.status(400).json({ error: 'One or more medication IDs not found' });
@@ -128,121 +89,35 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   const medMap = new Map(medications.map((m) => [m.id, m]));
+  const order = await createOrder(careUnitId, lines, medMap);
 
-  const order = await prisma.order.create({
-    data: {
-      careUnitId,
-      lines: {
-        create: lines.map((l: { medicationId: number; quantity: number }) => {
-          const med = medMap.get(l.medicationId)!;
-          return {
-            medicationId:   med.id,
-            medicationName: med.name,
-            form:           med.form,
-            strength:       med.strength,
-            quantity:       l.quantity,
-          };
-        }),
-      },
-    },
-    include: {
-      careUnit: { select: { id: true, name: true } },
-      lines:    true,
-    },
-  });
-
-  await logAction(req.user!, 'ORDER_CREATED', 'Order', order.id, {
+  await logAction(req.user!, 'ORDER_CREATED', 'Order', Number(order.id.replace('ORD-', '')), {
     careUnitId: order.careUnitId,
     lineCount:  order.lines.length,
   });
 
-  res.status(201).json(formatOrder(order));
+  res.status(201).json(order);
 });
 
 // ─── PATCH /orders/:id/status ─────────────────────────────────────────────────
-// Advances the order one step in the fixed flow:
-// Utkast → Skickad → Bekräftad → Levererad
-// Reaching Levererad triggers a stock increment for every order line.
 
 router.patch('/:id/status', requireRole('Apotekare', 'Admin'), async (req: Request<{ id: string }>, res: Response) => {
   const id = parseId(req.params.id);
   if (!id) { res.status(400).json({ error: 'Invalid id' }); return; }
 
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: { lines: true },
-  });
+  const result = await advanceOrderStatus(id);
 
-  if (!order) { res.status(404).json({ error: 'Order not found' }); return; }
-
-  const next = NEXT_STATUS[order.status];
-  if (!next) {
-    res.status(409).json({ error: 'Order is already at final status (Levererad)' });
-    return;
+  if ('error' in result) {
+    if (result.error === 'Order not found')  { res.status(404).json({ error: result.error }); return; }
+    if (result.error === 'already_final')    { res.status(409).json({ error: 'Order is already at final status (Levererad)' }); return; }
+    if (result.error === 'conflict')         { res.status(409).json({ error: 'Order status was already changed by another request' }); return; }
   }
 
-  if (next === OrderStatus.Levererad) {
-    // Advance status and increment stock atomically.
-    // Including current status in WHERE prevents double-delivery if two requests race.
-    const [result] = await prisma.$transaction([
-      prisma.order.updateMany({
-        where: { id, status: order.status },
-        data:  { status: next, deliveredAt: new Date() },
-      }),
-      ...order.lines.map((line) =>
-        prisma.medication.update({
-          where: { id: line.medicationId },
-          data:  { stockBalance: { increment: line.quantity } },
-        }),
-      ),
-    ]);
+  const { order, from, to } = result as { order: Record<string, unknown>; from: OrderStatus; to: OrderStatus };
 
-    if (result.count === 0) {
-      res.status(409).json({ error: 'Order status was already changed by another request' });
-      return;
-    }
+  await logAction(req.user!, 'ORDER_STATUS_ADVANCED', 'Order', id, { from, to });
 
-    const updated = await prisma.order.findUnique({
-      where: { id },
-      include: {
-        careUnit: { select: { id: true, name: true } },
-        lines:    true,
-      },
-    });
-
-    await logAction(req.user!, 'ORDER_STATUS_ADVANCED', 'Order', id, {
-      from: order.status,
-      to:   next,
-    });
-
-    res.json(formatOrder(updated as typeof order & { careUnit: { id: number; name: string } }));
-    return;
-  }
-
-  const result = await prisma.order.updateMany({
-    where: { id, status: order.status },
-    data:  { status: next },
-  });
-
-  if (result.count === 0) {
-    res.status(409).json({ error: 'Order status was already changed by another request' });
-    return;
-  }
-
-  const updated = await prisma.order.findUnique({
-    where: { id },
-    include: {
-      careUnit: { select: { id: true, name: true } },
-      lines:    true,
-    },
-  });
-
-  await logAction(req.user!, 'ORDER_STATUS_ADVANCED', 'Order', id, {
-    from: order.status,
-    to:   next,
-  });
-
-  res.json(formatOrder(updated as typeof order & { careUnit: { id: number; name: string } }));
+  res.json(order);
 });
 
 export default router;

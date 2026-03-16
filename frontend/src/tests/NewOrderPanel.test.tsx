@@ -27,6 +27,8 @@ function renderPanel(onSave = vi.fn().mockResolvedValue(undefined)) {
       careUnits={careUnits}
       medications={medications}
       onSave={onSave}
+      quickOrderMedId={null}
+      onQuickOrderConsumed={vi.fn()}
     />,
   );
 }

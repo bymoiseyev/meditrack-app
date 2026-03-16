@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import prisma from '../lib/prisma.js';
 import { signToken, requireAuth } from '../lib/auth.js';
+import { findUserByEmail, findUserById, verifyPassword } from '../services/authService.js';
 
 const router = Router();
 
@@ -16,10 +15,10 @@ router.post('/login', async (req: Request, res: Response) => {
     return;
   }
 
-  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  const user = await findUserByEmail(email);
 
   // Use a constant-time comparison even on not-found to avoid timing attacks
-  const passwordMatch = user ? await bcrypt.compare(password, user.password) : false;
+  const passwordMatch = user ? await verifyPassword(password, user.password) : false;
 
   if (!user || !passwordMatch) {
     // Slow down failed attempts to make brute force attacks impractical
@@ -39,13 +38,8 @@ router.post('/login', async (req: Request, res: Response) => {
 // ─── GET /auth/me ─────────────────────────────────────────────────────────────
 
 router.get('/me', requireAuth, async (req: Request, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user!.userId },
-    select: { id: true, name: true, email: true, role: true },
-  });
-
+  const user = await findUserById(req.user!.userId);
   if (!user) { res.status(404).json({ error: 'Användare hittades inte' }); return; }
-
   res.json(user);
 });
 
