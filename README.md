@@ -5,6 +5,8 @@
 MediTrack is an internal tool for managing medication orders and stock levels across care units. Today many care units rely on manual lists and email, which creates unnecessary risks and delays. MediTrack digitizes that flow, from order to delivery, getting the right information to the right person at the right time.
 
 ---
+<img width="1713" height="898" alt="Skärmbild 2026-03-16 172504" src="https://github.com/user-attachments/assets/6b7b868e-a475-4f42-8452-ab16a95c5964" />
+---
 
 ## 2. Technical Choices & Architecture
 
