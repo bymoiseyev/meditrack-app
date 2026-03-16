@@ -78,7 +78,7 @@ Order lines store a copy of the medication name, form and strength at the time o
 Every meaningful action, creating an order, advancing a status, adding or deleting a medication, is logged with the user, their role at the time, and relevant details. In a healthcare context, traceability is critical. Logging happens at the end of each successful handler so only completed actions are recorded.
 
 ### AI order parsing
-Nurses can describe an order in free-text Swedish and the app sends that input to OpenAI alongside the current medication and care unit list, which returns a structured order that pre-fills the form. The limitation of this approach is that pasting the full medication list into the prompt does not scale, a larger dataset would require a smarter retrieval step before calling the model.
+User can describe an order in free-text Swedish and the app sends that input to OpenAI alongside the current medication and care unit list, which returns a structured order that pre-fills the form. The limitation of this approach is that pasting the full medication list into the prompt does not scale, a larger dataset would require a smarter retrieval step before calling the model.
 
 ---
 
