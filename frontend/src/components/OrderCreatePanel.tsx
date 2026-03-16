@@ -149,7 +149,7 @@ export default function OrderCreatePanel({ careUnits, medications, onSave, quick
   }
 
   return (
-    <div className=' 2xl:sticky  2xl:top-0 '>
+    <div>
       <div className="flex items-center  mb-3">
         <h2 className="text-sm font-semibold text-slate-700">
           Ny order

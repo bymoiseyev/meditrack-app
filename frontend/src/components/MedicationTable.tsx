@@ -17,9 +17,9 @@ const GRID = "grid-cols-[1.3fr_1fr_1fr_1fr_1.2fr_0.8fr_230px]";
 
 export default function MedicationTable({ filtered, deleteConfirmId, setDeleteConfirmId, onEdit, onDelete, onQuickOrder, canEdit, canDelete }: Props) {
   return (
-    <div className="hidden lg:block  border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-      {/* Table header */}
-      <div className={`grid ${GRID} items-center gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50`}>
+    <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      {/* Table header — stays fixed as a flex item */}
+      <div className={`grid ${GRID} items-center gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50 flex-shrink-0`}>
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Läkemedel</span>
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ATC-kod</span>
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Form</span>
@@ -29,6 +29,8 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Åtgärder</span>
       </div>
 
+      {/* Scrollable rows */}
+      <div className="overflow-y-auto flex-1">
       {filtered.length === 0 ? (
         <div className="px-6 py-12 text-center text-slate-400 text-sm">
           Inga läkemedel matchar din sökning.
@@ -123,6 +125,7 @@ export default function MedicationTable({ filtered, deleteConfirmId, setDeleteCo
           );
         })
       )}
+      </div>
     </div>
   );
 }

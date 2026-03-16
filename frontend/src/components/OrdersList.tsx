@@ -29,10 +29,10 @@ export default function OrdersList({ orders, onView }: Props) {
   return (
     <>
       {/* Desktop table — hidden on mobile */}
-      <div className="hidden lg:block bg-white border h-full  border-slate-200 rounded-xl shadow-sm overflow-hidden  2xl:pr-1 ">
+      <div className="hidden lg:block bg-white border h-full border-slate-200 rounded-xl shadow-sm 2xl:max-h-[calc(100vh-22rem)] 2xl:overflow-y-auto 2xl:pr-2">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/60">
+          <thead className="sticky top-0 z-10">
+            <tr className="border-b border-slate-100 bg-slate-50">
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Order-ID</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Datum</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Vårdenhet</th>

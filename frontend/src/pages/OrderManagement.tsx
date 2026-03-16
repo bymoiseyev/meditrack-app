@@ -80,8 +80,8 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/50">
-      <div className=" mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="min-h-screen 2xl:h-screen 2xl:overflow-hidden  2xl:flex 2xl:flex-col bg-zinc-50/50">
+      <div className="mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 2xl:flex-1 2xl:overflow-hidden 2xl:flex 2xl:flex-col 2xl:min-h-0">
 
         {/* Page header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
@@ -118,10 +118,10 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
         </div>
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-1 2xl:grid-cols-[1fr_380px] gap-6 items-start">
+        <div className="grid grid-cols-1 2xl:grid-cols-[1fr_380px] gap-6 items-start 2xl:flex-1 2xl:min-h-0 2xl:items-stretch">
 
           {/* Left: order history */}
-          <div className="order-2 2xl:order-1 ">
+          <div className="order-2 2xl:order-1 2xl:min-h-0">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-slate-700">
                 Beställningshistorik
@@ -136,7 +136,7 @@ export default function OrderManagement({ quickOrderMedId, onQuickOrderConsumed 
           </div>
 
           {/* Right: new order panel */}
-          <div className="order-1 2xl:order-2 2xl:sticky 2xl:top-6">
+          <div className="order-1 2xl:order-2 2xl:self-start">
             <OrderCreatePanel
               careUnits={careUnits}
               medications={medications}
