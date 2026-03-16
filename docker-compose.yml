@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16
+    container_name: meditrack-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: meditrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - meditrack_postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: meditrack-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/meditrack
+      JWT_SECRET: ${JWT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:4000
+    container_name: meditrack-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  meditrack_postgres_data:
