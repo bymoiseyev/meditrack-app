@@ -17,7 +17,7 @@ function AppShell() {
   useEffect(() => {
     if (!user) return;
     getMedications()
-      .then((meds) => setLowStockCount(meds.filter((m) => m.stockBalance <= m.threshold && m.threshold > 0).length))
+      .then((meds) => setLowStockCount(meds.filter((m) => m.stockBalance < m.threshold && m.threshold > 0).length))
       .catch(() => {});
   }, [user]);
 
