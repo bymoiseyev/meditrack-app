@@ -99,13 +99,12 @@ User can describe an order in free-text Swedish and the app sends that input to 
 
 ## 7. With more time, I would have…
 
-- Move JWT token storage from localStorage to an HttpOnly cookie over HTTPS.
+- Move JWT token storage from localStorage to an HttpOnly cookie
 - Add a proper rate limiter on the login endpoint to block repeated failed attempts.
-- Build a user management UI for admins to create and manage users without touching the database directly.
 - Replace the AI prompt approach with a smarter retrieval step, find the closest matching medications first before sending to the model, so it scales with a larger catalog.
 - Add real-time low stock notifications, currently the threshold warning is visible in the UI but there is no active notification when stock drops.
 - Add React Router for proper client-side routing instead of the current manual approach.
 - Add pagination to the medications and orders lists, fine for a demo dataset but loading everything at once does
   not scale to production.
-- Write more comprehensive tests, currently there is coverage on the order panel and auth but several handlers and UI flows are untested.
+- Write more comprehensive tests.
 - Short-lived access tokens with a refresh token mechanism for more secure session handling.
