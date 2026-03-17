@@ -19,16 +19,15 @@ PostgreSQL was a natural fit given the relational nature of the data. medication
 ---
 
 ## 3. How to Run
-
 **Requirements:** Docker and Docker Desktop installed.
-
 1. Clone the repository
-2. Create a `.env` file in the root of the project based on `.env.example` and fill in your values
+2. Create a `.env` file in the root of the project based on `.env.example` and fill in your values:
+   - `JWT_SECRET` — any long random string, used to sign authentication tokens
+   - `OPENAI_API_KEY` — only required to use the AI order parsing feature, the rest of the app works without it
 3. Run the following command from the root:
 ```bash
 docker compose up --build
 ```
-
 4. Seed the database on first run:
 ```bash
 docker exec meditrack-backend npx prisma db seed
