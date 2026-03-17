@@ -52,7 +52,7 @@ The app will be available at [http://localhost:5173](http://localhost:5173/)
 
 ### Extensions (optional)
 
-- AI feature, nurses can describe an order in free-text Swedish and the app parses it into a structured order using OpenAI
+- AI feature, user can describe an order in free-text Swedish and the app parses it into a structured order using OpenAI
 - Authentication, JWT-based login with role-based access control (Admin, Apotekare, Sjuksköterska)
 - Audit log, every meaningful action is tracked with user, role, timestamp and details
 
@@ -105,7 +105,6 @@ User can describe an order in free-text Swedish and the app sends that input to 
 - Build a user management UI for admins to create and manage users without touching the database directly.
 - Replace the AI prompt approach with a smarter retrieval step, find the closest matching medications first before sending to the model, so it scales with a larger catalog.
 - Add real-time low stock notifications, currently the threshold warning is visible in the UI but there is no active notification when stock drops.
-- Implement pagination on the orders and medication list, right now everything loads at once which does not scale.
 - Add React Router for proper client-side routing instead of the current manual approach.
 - Add pagination to the medications and orders lists, fine for a demo dataset but loading everything at once does
   not scale to production.
